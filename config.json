@@ -1,0 +1,106 @@
+{
+  "model": {
+    "model_name": "openbmb/MiniCPM-V-2_6",
+    "cache_dir": "./models",
+    "device": "auto",
+    "torch_dtype": "float16",
+    "trust_remote_code": true,
+    "use_flash_attention": true,
+    "max_length": 4096,
+    "temperature": 0.7,
+    "top_p": 0.9
+  },
+  "data": {
+    "symbol": "EURUSD",
+    "timeframe": "1m",
+    "lookback_days": 14,
+    "data_dir": "./data",
+    "cache_size": 10000,
+    "parallel_downloads": 32,
+    "validation_enabled": true,
+    "indicators": {
+      "rsi": {
+        "period": 14
+      },
+      "macd": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      },
+      "bollinger": {
+        "period": 20,
+        "std": 2
+      },
+      "sma": {
+        "periods": [
+          20,
+          50,
+          200
+        ]
+      },
+      "ema": {
+        "periods": [
+          12,
+          26
+        ]
+      },
+      "stochastic": {
+        "k_period": 14,
+        "d_period": 3
+      },
+      "atr": {
+        "period": 14
+      },
+      "adx": {
+        "period": 14
+      }
+    }
+  },
+  "library": {
+    "database_url": "postgresql://localhost/trading_library",
+    "cache_size_gb": 30,
+    "pattern_retention_days": 365,
+    "strategy_retention_days": 180,
+    "auto_population": true,
+    "historical_years": 10,
+    "min_pattern_confidence": 0.7,
+    "max_patterns_per_type": 1000
+  },
+  "hardware": {
+    "target_cpu": "AMD Ryzen 9 9950X",
+    "target_gpu": "NVIDIA RTX 5090",
+    "target_ram_gb": 192,
+    "target_storage": "Samsung 9100 PRO",
+    "max_cpu_workers": 32,
+    "max_gpu_memory_fraction": 0.9,
+    "max_ram_usage_fraction": 0.8,
+    "enable_mixed_precision": true,
+    "enable_gradient_checkpointing": true,
+    "enable_cpu_offload": false
+  },
+  "training": {
+    "batch_size": 8,
+    "learning_rate": 1e-05,
+    "num_epochs": 3,
+    "warmup_steps": 100,
+    "save_steps": 500,
+    "eval_steps": 250,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.1,
+    "target_modules": [
+      "q_proj",
+      "v_proj"
+    ]
+  },
+  "pine_script": {
+    "version": "5",
+    "max_indicators": 10,
+    "enable_risk_management": true,
+    "default_stop_loss": 0.02,
+    "default_take_profit": 0.04,
+    "enable_optimization": true,
+    "max_code_length": 5000,
+    "validate_syntax": true
+  }
+}

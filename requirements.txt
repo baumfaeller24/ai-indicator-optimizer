@@ -1,0 +1,72 @@
+# Core Dependencies
+torch>=2.1.0
+torchvision>=0.16.0
+torchaudio>=2.1.0
+
+# Transformers und HuggingFace
+transformers>=4.35.0
+accelerate>=0.24.0
+datasets>=2.14.0
+tokenizers>=0.14.0
+
+# Computer Vision
+opencv-python>=4.8.0
+Pillow>=10.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Data Processing
+pandas>=2.1.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Technical Analysis
+ta-lib>=0.4.25
+pandas-ta>=0.3.14b
+
+# Database
+psycopg2-binary>=2.9.7
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Async und Networking
+aiohttp>=3.8.0
+asyncio-throttle>=1.0.2
+requests>=2.31.0
+
+# Monitoring und Logging
+psutil>=5.9.0
+nvidia-ml-py>=12.535.0
+wandb>=0.15.0
+tensorboard>=2.14.0
+
+# Multiprocessing und Parallelisierung
+joblib>=1.3.0
+dask>=2023.9.0
+ray>=2.7.0
+
+# Configuration
+pydantic>=2.4.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+
+# Development Tools
+pytest>=7.4.0
+black>=23.9.0
+flake8>=6.1.0
+mypy>=1.6.0
+
+# Financial Data
+yfinance>=0.2.18
+ccxt>=4.1.0
+
+# Pine Script Parsing (falls verfügbar)
+lark>=1.1.7
+
+# Memory Optimization
+memory-profiler>=0.61.0
+pympler>=0.9
+
+# CUDA Support (optional, wird automatisch installiert falls GPU verfügbar)
+# nvidia-cublas-cu12
+# nvidia-cuda-runtime-cu12
