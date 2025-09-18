@@ -1,0 +1,22 @@
+[Unit]
+Description=AI-Indicator-Optimizer Auto-Backup Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/KI Pattern
+ExecStart=/usr/bin/python3 /home/%i/KI Pattern/auto_backup_scheduler.py daemon
+Restart=always
+RestartSec=10
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=PYTHONPATH=/home/%i/KI Pattern
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-optimizer-backup
+
+[Install]
+WantedBy=multi-user.target

@@ -59,8 +59,44 @@ class OHLCVData:
 
 
 @dataclass
+class TradingData:
+    """Trading-Daten Container"""
+    symbol: str
+    timeframe: str
+    ohlcv_data: List[OHLCVData]
+    tick_data: Optional[List[TickData]] = None
+    
+    def to_numpy(self) -> np.ndarray:
+        """Konvertiert zu NumPy Array für ML"""
+        data = []
+        for candle in self.ohlcv_data:
+            data.append([
+                candle.timestamp.timestamp(),
+                candle.open,
+                candle.high,
+                candle.low,
+                candle.close,
+                candle.volume
+            ])
+        return np.array(data)
+    
+    def get_price_series(self, price_type: str = "close") -> List[float]:
+        """Gibt Preis-Serie zurück"""
+        if price_type == "close":
+            return [candle.close for candle in self.ohlcv_data]
+        elif price_type == "open":
+            return [candle.open for candle in self.ohlcv_data]
+        elif price_type == "high":
+            return [candle.high for candle in self.ohlcv_data]
+        elif price_type == "low":
+            return [candle.low for candle in self.ohlcv_data]
+        else:
+            return [candle.close for candle in self.ohlcv_data]
+
+
+@dataclass
 class MarketData:
-    """Kombinierte Marktdaten"""
+    """Kombinierte Marktdaten (Legacy - use TradingData instead)"""
     symbol: str
     timeframe: str
     ohlcv_data: List[OHLCVData]

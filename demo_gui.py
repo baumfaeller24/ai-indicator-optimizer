@@ -19,6 +19,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from ai_indicator_optimizer.data.models import OHLCVData, MarketData
 from ai_indicator_optimizer.data.processor import DataProcessor, ProcessingConfig
+from ai_indicator_optimizer.data.dukascopy_connector import DukascopyConnector, DukascopyConfig
 from ai_indicator_optimizer.core import HardwareDetector, ResourceManager
 
 
@@ -57,6 +58,108 @@ st.markdown("""
 
 
 @st.cache_data
+def download_dukascopy_data(symbol: str, timeframe: str, days: int, use_cache: bool, max_workers: int, use_real_data: bool = False) -> MarketData:
+    """Lädt Daten von Dukascopy"""
+    try:
+        # Dukascopy Connector konfigurieren
+        config = DukascopyConfig(
+            max_workers=max_workers,
+            cache_dir="./data/cache",
+            use_real_data=use_real_data
+        )
+        
+        connector = DukascopyConnector(config)
+        
+        # Zeitraum berechnen
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        # OHLCV-Daten laden
+        ohlcv_df = connector.get_ohlcv_data(
+            symbol=symbol,
+            timeframe=timeframe,
+            start_date=start_date,
+            end_date=end_date,
+            use_cache=use_cache
+        )
+        
+        if ohlcv_df.empty:
+            st.error(f"❌ No data received for {symbol}")
+            return None
+        
+        # Zu OHLCVData konvertieren
+        ohlcv_data = []
+        for _, row in ohlcv_df.iterrows():
+            ohlcv = OHLCVData(
+                timestamp=row['timestamp'],
+                open=float(row['open']),
+                high=float(row['high']),
+                low=float(row['low']),
+                close=float(row['close']),
+                volume=float(row['volume'])
+            )
+            ohlcv_data.append(ohlcv)
+        
+        # MarketData erstellen
+        market_data = MarketData(
+            symbol=symbol,
+            timeframe=timeframe,
+            ohlcv_data=ohlcv_data
+        )
+        
+        st.success(f"✅ Downloaded {len(ohlcv_data)} candles from Dukascopy")
+        return market_data
+        
+    except Exception as e:
+        st.error(f"❌ Dukascopy download failed: {e}")
+        return None
+
+
+def load_uploaded_data(uploaded_file) -> MarketData:
+    """Lädt OHLCV-Daten aus hochgeladener CSV-Datei"""
+    try:
+        # CSV einlesen
+        df = pd.read_csv(uploaded_file)
+        
+        # Spalten validieren
+        required_columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        
+        if missing_columns:
+            st.error(f"❌ Missing columns: {missing_columns}")
+            st.info("Required columns: timestamp, open, high, low, close, volume")
+            return None
+        
+        # Timestamp konvertieren
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # OHLCV Data erstellen
+        ohlcv_data = []
+        for _, row in df.iterrows():
+            ohlcv = OHLCVData(
+                timestamp=row['timestamp'],
+                open=float(row['open']),
+                high=float(row['high']),
+                low=float(row['low']),
+                close=float(row['close']),
+                volume=float(row['volume'])
+            )
+            ohlcv_data.append(ohlcv)
+        
+        # MarketData erstellen
+        market_data = MarketData(
+            symbol=uploaded_file.name.split('.')[0].upper(),  # Dateiname als Symbol
+            timeframe="uploaded",
+            ohlcv_data=ohlcv_data
+        )
+        
+        return market_data
+        
+    except Exception as e:
+        st.error(f"❌ Error loading file: {e}")
+        return None
+
+
 def generate_sample_data(symbol: str, days: int, timeframe: str) -> MarketData:
     """Generiert Sample-Marktdaten"""
     
@@ -342,9 +445,43 @@ def main():
     
     # Data Configuration
     st.sidebar.subheader("📊 Data Settings")
-    symbol = st.sidebar.selectbox("Symbol", ["EURUSD", "GBPUSD", "USDJPY", "USDCHF"])
-    timeframe = st.sidebar.selectbox("Timeframe", ["100tick", "1000tick", "1m", "5m", "15m", "30m", "1h", "4h"])
-    days = st.sidebar.slider("Days of Data", 1, 30, 7)
+    
+    # Data Source Selection
+    data_source = st.sidebar.radio("Data Source", ["Generate Sample Data", "Download from Dukascopy", "Upload CSV File"])
+    
+    if data_source == "Generate Sample Data":
+        symbol = st.sidebar.selectbox("Symbol", ["EURUSD", "GBPUSD", "USDJPY", "USDCHF"])
+        timeframe = st.sidebar.selectbox("Timeframe", ["100tick", "1000tick", "1m", "5m", "15m", "30m", "1h", "4h"])
+        days = st.sidebar.slider("Days of Data", 1, 30, 7)
+    elif data_source == "Download from Dukascopy":
+        symbol = st.sidebar.selectbox("Symbol", ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CHF"])
+        timeframe = st.sidebar.selectbox("Timeframe", ["100tick", "1000tick", "1M", "5M", "15M", "30M", "1H", "4H", "1D"])
+        days = st.sidebar.slider("Days of Data", 1, 14, 7)
+        
+        # Dukascopy-spezifische Optionen
+        use_real_data = st.sidebar.checkbox("Use Real Dukascopy Data", value=False, help="Download real tick data from Dukascopy (slower)")
+        use_cache = st.sidebar.checkbox("Use Cache", value=True, help="Cache downloaded data for faster access")
+        max_workers = st.sidebar.slider("Download Workers", 1, 32, 16, help="Number of parallel download threads")
+        
+        # Tick-Daten Info
+        if "tick" in timeframe:
+            tick_count = timeframe.replace("tick", "")
+            st.sidebar.info(f"📊 Tick Data: {tick_count} ticks per bar")
+            st.sidebar.warning("⚡ Tick data requires more processing power")
+        
+        st.sidebar.info("🌐 Real-time data from Dukascopy")
+    else:
+        # File Upload
+        uploaded_file = st.sidebar.file_uploader(
+            "Upload OHLCV CSV File",
+            type=['csv'],
+            help="Upload a CSV file with columns: timestamp, open, high, low, close, volume"
+        )
+        
+        if uploaded_file:
+            st.sidebar.success(f"✅ File uploaded: {uploaded_file.name}")
+        else:
+            st.sidebar.info("📁 Please upload a CSV file")
     
     # Processing Configuration
     st.sidebar.subheader("⚡ Processing Settings")
@@ -363,19 +500,37 @@ def main():
     with col3:
         st.markdown('<div class="metric-card"><h3>📊 Indicators</h3><p>8 technical indicators</p></div>', unsafe_allow_html=True)
     
-    # Generate Data Button
-    if st.button("🚀 Generate & Process Data", type="primary"):
+    # Process Data Button
+    if data_source == "Generate Sample Data":
+        button_text = "🚀 Generate & Process Data"
+        button_disabled = False
+    elif data_source == "Download from Dukascopy":
+        button_text = "🌐 Download & Process Data"
+        button_disabled = False
+    else:
+        button_text = "📊 Process Uploaded Data"
+        button_disabled = 'uploaded_file' not in locals() or uploaded_file is None
+    
+    if st.button(button_text, type="primary", disabled=button_disabled):
         
         # Progress Bar
         progress_bar = st.progress(0)
         status_text = st.empty()
         
         try:
-            # Step 1: Generate Data
-            status_text.text("📊 Generating market data...")
-            progress_bar.progress(20)
-            
-            market_data = generate_sample_data(symbol, days, timeframe)
+            # Step 1: Load/Generate Data
+            if data_source == "Generate Sample Data":
+                status_text.text("📊 Generating market data...")
+                progress_bar.progress(20)
+                market_data = generate_sample_data(symbol, days, timeframe)
+            elif data_source == "Download from Dukascopy":
+                status_text.text("🌐 Downloading from Dukascopy...")
+                progress_bar.progress(20)
+                market_data = download_dukascopy_data(symbol, timeframe, days, use_cache, max_workers, use_real_data)
+            else:
+                status_text.text("📁 Loading uploaded data...")
+                progress_bar.progress(20)
+                market_data = load_uploaded_data(uploaded_file)
             
             # Step 2: Initialize Processor
             status_text.text("⚙️ Initializing data processor...")
@@ -408,13 +563,15 @@ def main():
             status_text.text("✅ Processing complete!")
             
             # Display Results
-            st.success(f"✅ Processed {len(market_data.ohlcv_data)} data points in {processing_time:.2f} seconds")
+            data_type = "tick bars" if "tick" in timeframe else "candles"
+            st.success(f"✅ Processed {len(market_data.ohlcv_data)} {data_type} in {processing_time:.2f} seconds")
             
             # Metrics
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                st.metric("Data Points", len(market_data.ohlcv_data))
+                data_label = f"{timeframe} Bars" if "tick" in timeframe else "Candles"
+                st.metric(data_label, len(market_data.ohlcv_data))
             
             with col2:
                 st.metric("Processing Time", f"{processing_time:.2f}s")

@@ -73,8 +73,9 @@ class HardwareDetector:
         try:
             # CPU Model und Kerne
             cpu_model = platform.processor()
-            if not cpu_model:
-                # Fallback für Linux
+            
+            # Fallback für Linux (platform.processor() gibt oft nur "x86_64" zurück)
+            if not cpu_model or cpu_model == "x86_64":
                 try:
                     with open('/proc/cpuinfo', 'r') as f:
                         for line in f:
