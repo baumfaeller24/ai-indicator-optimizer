@@ -1,0 +1,13 @@
+{
+  "trader_id": "AI-OPTIMIZER-BACKTEST",
+  "log_level": "INFO",
+  "cache": {
+    "database": {
+      "type": "in_memory"
+    }
+  },
+  "data_engine": {
+    "qsize": 1000000,
+    "time_bars_build_with_no_updates": true
+  }
+}

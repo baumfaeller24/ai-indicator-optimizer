@@ -1,0 +1,44 @@
+{
+  "ai_pattern_strategy": {
+    "strategy_class": "AIPatternStrategy",
+    "config": {
+      "ai_endpoint": "http://localhost:8080/predictions/pattern_model",
+      "min_confidence": 0.7,
+      "position_size": 1000,
+      "use_mock": true,
+      "max_positions": 1,
+      "risk_per_trade": 0.02,
+      "instruments": ["EUR/USD.SIM"],
+      "bar_type": "EUR/USD.SIM-1-MINUTE-BID-INTERNAL"
+    }
+  },
+  
+  "torchserve_config": {
+    "model_name": "pattern_model",
+    "model_version": "1.0",
+    "batch_size": 1,
+    "max_batch_delay": 100,
+    "response_timeout": 5000,
+    "workers": {
+      "initial": 1,
+      "min": 1,
+      "max": 4
+    }
+  },
+  
+  "development_settings": {
+    "use_mock_ai": true,
+    "log_level": "INFO",
+    "enable_performance_tracking": true,
+    "save_predictions": true,
+    "prediction_log_file": "logs/ai_predictions.json"
+  },
+  
+  "production_settings": {
+    "use_mock_ai": false,
+    "log_level": "WARNING",
+    "enable_performance_tracking": true,
+    "ai_fallback_enabled": true,
+    "max_prediction_latency_ms": 1000
+  }
+}

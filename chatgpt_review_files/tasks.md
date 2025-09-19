@@ -110,7 +110,8 @@
   - Entwicke Integration aller ChatGPT-Verbesserungen in Main Application
   - Erstelle Comprehensive Testing für alle Enhanced Features
   - _Requirements: 6.1, 6.4, 8.1, 8.2, 8.3, 8.4_
-- [ ] 16. Enhanced Feature Logging und Dataset Builder Integration
+- [ ] 1
+6. Enhanced Feature Logging und Dataset Builder Integration
   - Implementiere FeaturePredictionLogger für strukturiertes AI-Prediction-Logging mit Parquet-Export
   - Entwicke Buffer-System mit konfigurierbarer Größe für Performance-optimierte Datensammlung
   - Erstelle automatische Parquet-Flush-Funktionalität mit Kompression (zstd)

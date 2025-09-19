@@ -1,0 +1,23 @@
+{
+  "trader_id": "AI-OPTIMIZER-LIVE",
+  "log_level": "INFO",
+  "cache": {
+    "database": {
+      "type": "redis",
+      "host": "localhost",
+      "port": 6379
+    }
+  },
+  "data_engine": {
+    "qsize": 100000,
+    "time_bars_build_with_no_updates": false
+  },
+  "risk_engine": {
+    "bypass": false,
+    "max_order_submit_rate": "1000/00:00:01"
+  },
+  "exec_engine": {
+    "reconciliation": true,
+    "snapshot_orders": true
+  }
+}

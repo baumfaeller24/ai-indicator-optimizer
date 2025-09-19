@@ -1,0 +1,13 @@
+{
+  "trader_id": "AI-OPTIMIZER-SANDBOX",
+  "log_level": "DEBUG",
+  "cache": {
+    "database": {
+      "type": "in_memory"
+    }
+  },
+  "data_engine": {
+    "qsize": 10000,
+    "validate_data_sequence": true
+  }
+}
