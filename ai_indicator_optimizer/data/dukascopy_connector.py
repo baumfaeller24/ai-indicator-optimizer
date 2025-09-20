@@ -33,6 +33,7 @@ class DukascopyConfig:
     retry_delay: float = 1.0
     cache_dir: str = "./data/cache"
     use_real_data: bool = True  # True = echte Dukascopy-Daten, False = simuliert
+    local_data_path: Optional[str] = None  # Pfad zu lokalen Profi-Daten
     
     def __post_init__(self):
         if self.symbols is None:
@@ -188,21 +189,28 @@ class DukascopyConnector:
             # Dukascopy Symbol Format
             dukascopy_symbol = self.symbol_mapping.get(symbol, symbol.replace("/", ""))
             
-            # Wähle Datenquelle basierend auf Konfiguration
+            # Wähle Datenquelle basierend auf Priorität
+            
+            # 1. Priorität: Lokale Profi-Daten
+            if self.config.local_data_path:
+                local_data = self._load_local_professional_data(symbol, date)
+                if not local_data.empty:
+                    self.logger.info(f"Using local professional data: {len(local_data)} ticks for {symbol} on {date}")
+                    return local_data
+            
+            # 2. Priorität: Echte Dukascopy-Daten
             if self.config.use_real_data:
-                # Versuche echte Dukascopy-Daten zu laden
                 real_data = self._load_real_dukascopy_data(dukascopy_symbol, date)
                 
                 if not real_data.empty:
-                    self.logger.info(f"Loaded {len(real_data)} real ticks for {symbol} on {date}")
+                    self.logger.info(f"Using real Dukascopy data: {len(real_data)} ticks for {symbol} on {date}")
                     return real_data
                 else:
-                    # Fallback zu simulierten Daten
-                    self.logger.warning(f"Real data not available for {symbol} on {date}, using simulated data")
-                    return self._generate_simulated_tick_data(symbol, date)
-            else:
-                # Verwende simulierte Daten
-                return self._generate_simulated_tick_data(symbol, date)
+                    self.logger.warning(f"Real Dukascopy data not available for {symbol} on {date}")
+            
+            # 3. Fallback: Simulierte Daten
+            self.logger.info(f"Using simulated data for {symbol} on {date}")
+            return self._generate_simulated_tick_data(symbol, date)
             
         except Exception as e:
             self.logger.error(f"Failed to load tick data for {symbol} on {date}: {e}")
@@ -426,6 +434,143 @@ class DukascopyConnector:
             self.logger.error(f"Tick data processing failed: {e}")
             return pd.DataFrame()
     
+    def _load_local_professional_data(self, symbol: str, date: datetime.date) -> pd.DataFrame:
+        """Lädt lokale professionelle Tick-Daten"""
+        
+        try:
+            if not self.config.local_data_path:
+                return pd.DataFrame()
+            
+            from pathlib import Path
+            
+            # Verschiedene Dateiformate unterstützen
+            base_path = Path(self.config.local_data_path)
+            
+            # Dateiname-Patterns für verschiedene Formate
+            patterns = [
+                f"{symbol}_{date.strftime('%Y%m%d')}.csv",
+                f"{symbol}_{date.strftime('%Y-%m-%d')}.csv",
+                f"{symbol.replace('/', '')}_{date.strftime('%Y%m%d')}.csv",
+                f"{symbol}_{date.strftime('%Y%m%d')}.parquet",
+                f"{symbol}_{date.strftime('%Y-%m-%d')}.parquet",
+                f"{date.strftime('%Y')}/{date.strftime('%m')}/{symbol}_{date.strftime('%d')}.csv",
+                f"{symbol}/{date.strftime('%Y%m%d')}.csv"
+            ]
+            
+            for pattern in patterns:
+                file_path = base_path / pattern
+                
+                if file_path.exists():
+                    self.logger.info(f"Found local data file: {file_path}")
+                    
+                    # Lade basierend auf Dateierweiterung
+                    if file_path.suffix.lower() == '.csv':
+                        df = pd.read_csv(file_path)
+                    elif file_path.suffix.lower() == '.parquet':
+                        df = pd.read_parquet(file_path)
+                    else:
+                        continue
+                    
+                    # Validiere und normalisiere Spalten
+                    df = self._normalize_professional_data(df, symbol)
+                    
+                    if not df.empty:
+                        self.logger.info(f"Loaded {len(df)} professional ticks from {file_path}")
+                        return df
+            
+            # Keine lokalen Daten gefunden
+            return pd.DataFrame()
+            
+        except Exception as e:
+            self.logger.error(f"Error loading local professional data: {e}")
+            return pd.DataFrame()
+    
+    def _normalize_professional_data(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
+        """Normalisiert professionelle Daten auf einheitliches Format"""
+        
+        try:
+            # Erkenne verschiedene Spalten-Formate
+            column_mappings = {
+                # Standard-Format
+                'timestamp': ['timestamp', 'time', 'datetime', 'date_time'],
+                'ask': ['ask', 'ask_price', 'askprice', 'offer'],
+                'bid': ['bid', 'bid_price', 'bidprice'],
+                'volume': ['volume', 'vol', 'size', 'quantity'],
+                'ask_volume': ['ask_volume', 'ask_vol', 'ask_size', 'offer_volume'],
+                'bid_volume': ['bid_volume', 'bid_vol', 'bid_size']
+            }
+            
+            # Mappe Spalten
+            normalized_df = pd.DataFrame()
+            
+            for target_col, possible_names in column_mappings.items():
+                for name in possible_names:
+                    if name in df.columns:
+                        normalized_df[target_col] = df[name]
+                        break
+            
+            # Timestamp konvertieren
+            if 'timestamp' in normalized_df.columns:
+                normalized_df['timestamp'] = pd.to_datetime(normalized_df['timestamp'])
+            else:
+                self.logger.error("No timestamp column found in professional data")
+                return pd.DataFrame()
+            
+            # Mindest-Spalten prüfen
+            required_cols = ['timestamp', 'ask', 'bid']
+            if not all(col in normalized_df.columns for col in required_cols):
+                self.logger.error(f"Missing required columns in professional data. Found: {list(normalized_df.columns)}")
+                return pd.DataFrame()
+            
+            # Volume-Spalten hinzufügen falls nicht vorhanden
+            if 'volume' not in normalized_df.columns:
+                if 'ask_volume' in normalized_df.columns and 'bid_volume' in normalized_df.columns:
+                    normalized_df['volume'] = normalized_df['ask_volume'] + normalized_df['bid_volume']
+                else:
+                    # Synthetisches Volume basierend auf Spread und Aktivität
+                    normalized_df['volume'] = self._generate_synthetic_volume(normalized_df)
+                    normalized_df['ask_volume'] = normalized_df['volume'] * 0.5
+                    normalized_df['bid_volume'] = normalized_df['volume'] * 0.5
+            
+            # Sortiere nach Timestamp
+            normalized_df = normalized_df.sort_values('timestamp').reset_index(drop=True)
+            
+            self.logger.info(f"Normalized professional data: {len(normalized_df)} ticks with columns {list(normalized_df.columns)}")
+            
+            return normalized_df
+            
+        except Exception as e:
+            self.logger.error(f"Error normalizing professional data: {e}")
+            return pd.DataFrame()
+    
+    def _generate_synthetic_volume(self, df: pd.DataFrame) -> pd.Series:
+        """Generiert synthetisches Volume für professionelle Daten ohne Volume"""
+        
+        try:
+            # Berechne Spread
+            spread = df['ask'] - df['bid']
+            
+            # Berechne Preisvolatilität
+            price_mid = (df['ask'] + df['bid']) / 2
+            price_changes = price_mid.diff().abs()
+            
+            # Volume basierend auf Spread und Volatilität
+            # Enger Spread + hohe Volatilität = hohes Volume
+            base_volume = 1.0
+            spread_factor = 1.0 / (spread / price_mid + 0.0001)  # Inverser Spread
+            volatility_factor = price_changes / price_mid.mean()
+            
+            synthetic_volume = base_volume * spread_factor * (1 + volatility_factor)
+            
+            # Normalisiere auf realistische Werte (0.1 - 10 Lots)
+            synthetic_volume = synthetic_volume.clip(0.1, 10.0)
+            
+            return synthetic_volume
+            
+        except Exception as e:
+            self.logger.error(f"Error generating synthetic volume: {e}")
+            return pd.Series([1.0] * len(df))
+
     def _load_real_dukascopy_data(self, symbol: str, date: datetime.date) -> pd.DataFrame:
         """Lädt echte Dukascopy Historical Data"""
         

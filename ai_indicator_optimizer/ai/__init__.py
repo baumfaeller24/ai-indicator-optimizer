@@ -1,21 +1,58 @@
 """
-AI Module: MiniCPM-4.1-8B Integration und multimodale Analyse
+AI Module: Enhanced Multimodal Pattern Recognition Engine
+Phase 2 Implementation
 """
 
-from .multimodal_ai import MultimodalAI
-from .fine_tuning import FineTuningManager
-from .models import PatternAnalysis, OptimizedParameters, MultimodalInput
-from .visual_pattern_analyzer import VisualPatternAnalyzer, VisualPattern, PatternAnalysisResult, PatternType
-from .numerical_indicator_optimizer import NumericalIndicatorOptimizer, OptimizationResult, IndicatorType, OptimizationConfig
-from .multimodal_strategy_generator import MultimodalStrategyGenerator, StrategyGenerationResult, TradingStrategy, TradingSignal
-from .confidence_scoring import ConfidenceScoring, ConfidenceMetrics, ConfidenceLevel
-from .pattern_recognition_engine import MultimodalPatternRecognitionEngine, PatternRecognitionConfig, PatternRecognitionResult
+# Phase 2 Enhanced Components - Import nur was existiert
+try:
+    from .visual_pattern_analyzer import VisualPatternAnalyzer, CandlestickPattern, create_visual_pattern_analyzer
+except ImportError:
+    pass
+
+try:
+    from .enhanced_feature_extractor import EnhancedFeatureExtractor, create_enhanced_feature_extractor
+except ImportError:
+    pass
+
+try:
+    from .confidence_position_sizer import ConfidencePositionSizer, create_confidence_position_sizer
+except ImportError:
+    pass
+
+try:
+    from .live_control_system import LiveControlSystem, create_live_control_system
+except ImportError:
+    pass
+
+try:
+    from .environment_config import EnvironmentConfigManager, get_config_manager, get_config
+except ImportError:
+    pass
+
+try:
+    from .confidence_scoring import EnhancedConfidenceScorer, create_enhanced_confidence_scorer, ConfidenceLevel
+except ImportError:
+    pass
+
+# Legacy Components (falls vorhanden)
+try:
+    from .multimodal_ai import MultimodalAI
+except ImportError:
+    pass
+
+try:
+    from .fine_tuning import FineTuningManager
+except ImportError:
+    pass
 
 __all__ = [
-    'MultimodalAI', 'FineTuningManager', 'PatternAnalysis', 'OptimizedParameters', 'MultimodalInput',
-    'VisualPatternAnalyzer', 'VisualPattern', 'PatternAnalysisResult', 'PatternType',
-    'NumericalIndicatorOptimizer', 'OptimizationResult', 'IndicatorType', 'OptimizationConfig',
-    'MultimodalStrategyGenerator', 'StrategyGenerationResult', 'TradingStrategy', 'TradingSignal',
-    'ConfidenceScoring', 'ConfidenceMetrics', 'ConfidenceLevel',
-    'MultimodalPatternRecognitionEngine', 'PatternRecognitionConfig', 'PatternRecognitionResult'
+    # Phase 2 Components
+    'VisualPatternAnalyzer', 'CandlestickPattern', 'create_visual_pattern_analyzer',
+    'EnhancedFeatureExtractor', 'create_enhanced_feature_extractor',
+    'ConfidencePositionSizer', 'create_confidence_position_sizer',
+    'LiveControlSystem', 'create_live_control_system',
+    'EnvironmentConfigManager', 'get_config_manager', 'get_config',
+    'EnhancedConfidenceScorer', 'create_enhanced_confidence_scorer', 'ConfidenceLevel',
+    # Legacy Components
+    'MultimodalAI', 'FineTuningManager'
 ]

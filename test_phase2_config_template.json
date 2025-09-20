@@ -1,0 +1,26 @@
+{
+  "development": {
+    "debug_mode": true,
+    "use_mock_ai": true,
+    "min_confidence": 0.6,
+    "base_position_size": 1000,
+    "use_redis": false,
+    "use_kafka": false
+  },
+  "staging": {
+    "debug_mode": false,
+    "use_mock_ai": false,
+    "min_confidence": 0.7,
+    "base_position_size": 2000,
+    "use_redis": true,
+    "use_kafka": false
+  },
+  "production": {
+    "debug_mode": false,
+    "use_mock_ai": false,
+    "min_confidence": 0.8,
+    "base_position_size": 5000,
+    "use_redis": true,
+    "use_kafka": true
+  }
+}

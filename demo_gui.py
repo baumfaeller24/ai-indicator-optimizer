@@ -242,7 +242,7 @@ def get_hardware_info():
 
 
 def create_candlestick_chart(market_data: MarketData, indicators=None):
-    """Erstellt interaktiven Candlestick-Chart mit Plotly"""
+    """Erstellt interaktiven Candlestick-Chart mit Plotly - optimiert für Tick-Daten"""
     
     df = pd.DataFrame([{
         'timestamp': candle.timestamp,
@@ -253,6 +253,31 @@ def create_candlestick_chart(market_data: MarketData, indicators=None):
         'volume': candle.volume
     } for candle in market_data.ohlcv_data])
     
+    # Analysiere Datentyp für optimale Darstellung
+    is_tick_data = 'tick' in market_data.timeframe.lower()
+    
+    # Für Tick-Daten: Analysiere Zeitabstände
+    if is_tick_data and len(df) > 1:
+        time_diffs = df['timestamp'].diff().dt.total_seconds().dropna()
+        avg_time_diff = time_diffs.median()
+        min_time_diff = time_diffs.min()
+        max_time_diff = time_diffs.max()
+        
+        st.info(f"📊 Tick-Daten erkannt: Ø Zeitabstand {avg_time_diff:.1f}s (Min: {min_time_diff:.1f}s, Max: {max_time_diff:.1f}s)")
+    
+    # Analysiere Docht-Qualität
+    if len(df) > 0:
+        upper_wicks = df['high'] - df[['open', 'close']].max(axis=1)
+        lower_wicks = df[['open', 'close']].min(axis=1) - df['low']
+        
+        bars_with_wicks = ((upper_wicks > 0.00001) | (lower_wicks > 0.00001)).sum()
+        wick_percentage = (bars_with_wicks / len(df)) * 100
+        
+        if wick_percentage < 50:
+            st.warning(f"⚠️ Nur {wick_percentage:.1f}% der Kerzen haben sichtbare Dochte - möglicherweise Darstellungsproblem")
+        else:
+            st.success(f"✅ {wick_percentage:.1f}% der Kerzen haben Dochte - gute Datenqualität")
+    
     # Subplots erstellen
     fig = make_subplots(
         rows=3, cols=1,
@@ -262,7 +287,7 @@ def create_candlestick_chart(market_data: MarketData, indicators=None):
         row_heights=[0.6, 0.2, 0.2]
     )
     
-    # Candlestick Chart
+    # Candlestick Chart mit optimierter Darstellung
     fig.add_trace(
         go.Candlestick(
             x=df['timestamp'],
@@ -272,7 +297,15 @@ def create_candlestick_chart(market_data: MarketData, indicators=None):
             close=df['close'],
             name=market_data.symbol,
             increasing_line_color='#00ff88',
-            decreasing_line_color='#ff4444'
+            decreasing_line_color='#ff4444',
+            increasing_line_width=2,
+            decreasing_line_width=2,
+            # Optimiere Kerzenbreite für Tick-Daten
+            line=dict(width=1),
+            whiskerwidth=0.8,
+            # Verbessere Sichtbarkeit der Dochte
+            increasing_fillcolor='rgba(0, 255, 136, 0.7)',
+            decreasing_fillcolor='rgba(255, 68, 68, 0.7)'
         ),
         row=1, col=1
     )
@@ -391,13 +424,36 @@ def create_candlestick_chart(market_data: MarketData, indicators=None):
         row=3, col=1
     )
     
+    # Berechne optimale Kerzenbreite für Tick-Daten
+    if 'tick' in market_data.timeframe and len(df) > 1:
+        # Für Tick-Daten: Berechne durchschnittlichen Zeitabstand
+        time_diffs = df['timestamp'].diff().dt.total_seconds().dropna()
+        avg_time_diff = time_diffs.median()  # Median ist robuster als Mean
+        
+        # Setze Kerzenbreite basierend auf Zeitabstand
+        if avg_time_diff > 0:
+            # Konvertiere zu Millisekunden für Plotly
+            candle_width = avg_time_diff * 1000 * 0.8  # 80% des Zeitabstands
+            
+            fig.update_layout(
+                xaxis=dict(
+                    type='date',
+                    # Optimiere für Tick-Charts
+                    tickmode='auto',
+                    nticks=20
+                )
+            )
+    
     # Layout anpassen
     fig.update_layout(
         title=f"{market_data.symbol} - {market_data.timeframe} Chart",
         xaxis_rangeslider_visible=False,
         height=800,
         showlegend=True,
-        template='plotly_dark'
+        template='plotly_dark',
+        # Verbessere Zoom-Verhalten für Tick-Daten
+        xaxis_fixedrange=False,
+        yaxis_fixedrange=False
     )
     
     # Y-Achsen anpassen
