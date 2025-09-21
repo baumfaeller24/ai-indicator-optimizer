@@ -1,0 +1,13 @@
+{
+  "start_time": "2025-09-22T01:07:05.870359",
+  "timeframes_processed": [
+    "1m",
+    "5m",
+    "15m"
+  ],
+  "total_bars_generated": 41898,
+  "charts_generated": 100,
+  "vision_analyses": 100,
+  "processing_time_minutes": 8.803814923763275,
+  "end_time": "2025-09-22T01:15:54.099237"
+}
