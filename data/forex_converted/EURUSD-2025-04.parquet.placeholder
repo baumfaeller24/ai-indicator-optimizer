@@ -1,9 +1,9 @@
 {
   "file_type": "large_file_placeholder",
-  "original_file": "./autonomous_analysis_results.json",
-  "size_bytes": 89260068,
-  "size_mb": 85.13,
-  "created": "2025-09-22T14:48:31.990959",
+  "original_file": "./data/forex_converted/EURUSD-2025-04.parquet",
+  "size_bytes": 88327968,
+  "size_mb": 84.24,
+  "created": "2025-09-22T14:48:31.992880",
   "reason": "File exceeds GitHub 25MB limit",
   "note": "This is a placeholder. Original file exists locally but is not tracked in Git.",
   "instructions": "To restore: Contact repository maintainer or regenerate using project tools."

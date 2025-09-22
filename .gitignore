@@ -1,3 +1,10 @@
+# Large Files (>25MB) - Use placeholders instead
+*.parquet
+*.zip
+autonomous_analysis_results.json
+data/mega_pretraining/
+data/forex_converted/*.parquet
+forex/*.zip
 
 # Python
 __pycache__/
@@ -20,44 +27,67 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual Environments
+# Virtual Environment
+test_env/
 venv/
 env/
 ENV/
-test_env/
-
-# Trading Data
-data/cache/
-*.csv
-*.pkl
-*.h5
-
-# Model Files
-models/
-checkpoints/
-*.pth
-*.bin
-
-# Logs
-logs/
-*.log
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Secrets
-.env
-config/secrets.json
-api_keys.json
+# Logs
+*.log
+logs/
 
-# Temporary
-tmp/
-temp/
+# Cache
+*cache/
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Model files (large)
+*.bin
+*.safetensors
+models/
+
+# Data files (large)
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Trading data
+*.csv
+*.json
+!config.json
+!package.json
+!requirements*.json
+!*_config.json
+!project_*.json
+
+# Backup files
+*backup*
+*_backup
+*.backup
