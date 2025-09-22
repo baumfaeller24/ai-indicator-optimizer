@@ -1,0 +1,14 @@
+{
+  "start_time": "2025-09-22T01:29:09.071255",
+  "zip_files_processed": 3,
+  "excel_files_converted": 3,
+  "total_rows_converted": 47820861,
+  "parquet_files_generated": [
+    "data/forex_converted/EURUSD-2025-05.parquet",
+    "data/forex_converted/EURUSD-2025-04.parquet",
+    "data/forex_converted/EURUSD-2025-06.parquet"
+  ],
+  "processing_time_minutes": 0.4029096047083537,
+  "errors": [],
+  "end_time": "2025-09-22T01:29:33.245814"
+}

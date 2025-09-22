@@ -1,0 +1,51 @@
+{
+  "start_time": "2025-09-22T01:35:44.054116",
+  "data_sources": {
+    "july_2025": {
+      "files": [
+        "EURUSD-2025-07_part1.parquet",
+        "EURUSD-2025-07_part2.parquet",
+        "EURUSD-2025-07_part3.parquet",
+        "EURUSD-2025-07_part4.parquet",
+        "EURUSD-2025-07_part5.parquet"
+      ],
+      "estimated_ticks": 14400075,
+      "status": "processed"
+    },
+    "april_2025": {
+      "files": [
+        "data/forex_converted/EURUSD-2025-04.parquet"
+      ],
+      "estimated_ticks": 19821115,
+      "status": "converted"
+    },
+    "may_2025": {
+      "files": [
+        "data/forex_converted/EURUSD-2025-05.parquet"
+      ],
+      "estimated_ticks": 16703219,
+      "status": "converted"
+    },
+    "june_2025": {
+      "files": [
+        "data/forex_converted/EURUSD-2025-06.parquet"
+      ],
+      "estimated_ticks": 11296527,
+      "status": "converted"
+    }
+  },
+  "total_ticks_processed": 62220936,
+  "total_bars_generated": 148010,
+  "total_charts_generated": 250,
+  "total_vision_analyses": 250,
+  "timeframes_processed": [
+    "1m",
+    "5m",
+    "15m",
+    "1h",
+    "4h",
+    "1d"
+  ],
+  "processing_time_minutes": 21.3891215244929,
+  "end_time": "2025-09-22T01:57:07.401387"
+}

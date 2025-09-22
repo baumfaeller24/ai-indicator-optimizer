@@ -22,10 +22,10 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import multiprocessing as mp
 from tqdm import tqdm
 
-# from ..data.dukascopy_connector import DukascopyConnector
-# from ..data.models import TradingData, OHLCVData
-# from ..indicators.indicator_calculator import IndicatorCalculator
-# from ..visualization.chart_renderer import ChartRenderer
+from ..data.dukascopy_connector import DukascopyConnector
+from ..data.models import TradingData, OHLCVData
+from ..indicators.indicator_calculator import IndicatorCalculator
+from ..visualization.chart_renderer import ChartRenderer
 
 
 @dataclass

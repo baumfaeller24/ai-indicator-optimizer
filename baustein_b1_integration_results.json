@@ -1,0 +1,33 @@
+{
+  "test_timestamp": "2025-09-22T10:03:12.143815",
+  "baustein": "B1_multimodal_fusion_engine",
+  "overall_success": true,
+  "performance_stats": {
+    "total_fusions": 5,
+    "successful_fusions": 5,
+    "failed_fusions": 0,
+    "success_rate": 1.0,
+    "total_processing_time": 0.0006279945373535156,
+    "average_processing_time": 0.00012559890747070311,
+    "fusion_strategy": "confidence_based",
+    "fusions_per_minute": 477711.1617312073
+  },
+  "strategy_results": {
+    "weighted_average": true,
+    "confidence_based": true,
+    "hierarchical": true,
+    "ensemble": true
+  },
+  "timeframe_results": {
+    "1m": true,
+    "5m": true,
+    "1h": true,
+    "4h": true
+  },
+  "fusion_capabilities": {
+    "technical_features_extracted": 0,
+    "vision_features_extracted": 11,
+    "fused_features_generated": 7,
+    "fusion_confidence": 0.9006882275057008
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "validation_summary": {
+    "total_strategies": 7,
+    "successful_strategies": 7,
+    "success_rate": 1.0,
+    "total_fixes_applied": 1,
+    "avg_performance_gain": 0.3285714285714286,
+    "avg_processing_time": 0.00033746446881975444
+  },
+  "top_validation_issues": [
+    {
+      "issue": "MEGA-DATASET optimized indicators detected: ta.sma, ta.rsi, ta.bb",
+      "count": 6,
+      "percentage": 66.66666666666666
+    },
+    {
+      "issue": "Pine Script version declaration required",
+      "count": 1,
+      "percentage": 11.11111111111111
+    },
+    {
+      "issue": "Missing stop loss in trading strategy",
+      "count": 1,
+      "percentage": 11.11111111111111
+    },
+    {
+      "issue": "Missing take profit in trading strategy",
+      "count": 1,
+      "percentage": 11.11111111111111
+    }
+  ],
+  "performance_metrics": {
+    "strategies_with_performance_gain": 7,
+    "max_performance_gain": 0.9,
+    "min_processing_time": 0.0002646446228027344,
+    "max_processing_time": 0.0006310939788818359
+  },
+  "mega_dataset_integration": {
+    "dataset_path": "data/mega_pretraining",
+    "total_ticks_analyzed": "62.2M",
+    "charts_analyzed": 250,
+    "optimization_based_on_dataset": true
+  },
+  "timestamp": 1758517723.0358522,
+  "report_version": "1.0"
+}

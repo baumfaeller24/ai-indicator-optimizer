@@ -1,0 +1,198 @@
+{
+  "test_timestamp": 1758527187.678572,
+  "total_charts_analyzed": 15,
+  "success_rate": 1.0,
+  "timeframe_results": {
+    "1m": [
+      {
+        "chart_file": "mega_chart_1m_003.png",
+        "timeframe": "1m",
+        "analysis_time": 6.2448670864105225,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_1m_044.png",
+        "timeframe": "1m",
+        "analysis_time": 4.9831342697143555,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_1m_021.png",
+        "timeframe": "1m",
+        "analysis_time": 5.002104043960571,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      }
+    ],
+    "5m": [
+      {
+        "chart_file": "mega_chart_5m_003.png",
+        "timeframe": "5m",
+        "analysis_time": 4.992174863815308,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_5m_040.png",
+        "timeframe": "5m",
+        "analysis_time": 4.988368034362793,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_5m_035.png",
+        "timeframe": "5m",
+        "analysis_time": 4.996710777282715,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      }
+    ],
+    "15m": [
+      {
+        "chart_file": "mega_chart_15m_015.png",
+        "timeframe": "15m",
+        "analysis_time": 4.959619998931885,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_15m_026.png",
+        "timeframe": "15m",
+        "analysis_time": 4.954098224639893,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_15m_045.png",
+        "timeframe": "15m",
+        "analysis_time": 4.9626545906066895,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      }
+    ],
+    "1h": [
+      {
+        "chart_file": "mega_chart_1h_013.png",
+        "timeframe": "1h",
+        "analysis_time": 4.962121248245239,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_1h_009.png",
+        "timeframe": "1h",
+        "analysis_time": 4.961019992828369,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_1h_022.png",
+        "timeframe": "1h",
+        "analysis_time": 4.965546131134033,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      }
+    ],
+    "4h": [
+      {
+        "chart_file": "mega_chart_4h_010.png",
+        "timeframe": "4h",
+        "analysis_time": 4.966654300689697,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_4h_036.png",
+        "timeframe": "4h",
+        "analysis_time": 4.973951816558838,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      },
+      {
+        "chart_file": "mega_chart_4h_050.png",
+        "timeframe": "4h",
+        "analysis_time": 4.977356672286987,
+        "quality_score": 0.5800000000000001,
+        "confidence": 0.5,
+        "patterns_found": 2,
+        "insights_count": 5,
+        "trend": "bullish",
+        "recommendation": "hold",
+        "success": true
+      }
+    ]
+  },
+  "mega_dataset_integration": true
+}
