@@ -13,7 +13,24 @@ import numpy as np
 from pathlib import Path
 import logging
 
-from nautilus_trader.model.data import Bar
+# Use flexible Bar type (can be Nautilus Bar or Mock Bar)
+from typing import Protocol
+
+class BarProtocol(Protocol):
+    """Protocol for Bar objects (Nautilus or Mock)"""
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+    ts_init: int
+    
+    @property
+    def bar_type(self) -> Any:
+        ...
+
+# Type alias for flexibility
+Bar = BarProtocol
 
 
 class BarDatasetBuilder:
@@ -127,7 +144,7 @@ class BarDatasetBuilder:
             # Timestamp & Instrument
             "ts_ns": int(bar.ts_init),
             "timestamp": datetime.utcfromtimestamp(bar.ts_init / 1e9).isoformat(),
-            "instrument": str(bar.bar_type.instrument_id),
+            "instrument": str(getattr(bar.bar_type, 'instrument_id', 'EUR/USD')),
             
             # OHLCV
             "open": open_price,
@@ -375,25 +392,41 @@ class BarDatasetBuilder:
         
         df = pl.DataFrame(self.rows)
         
-        # Label-Verteilung
+        # Label-Verteilung (JSON-safe conversion)
         label_col = f"label_name_h{self.horizon}"
         if label_col in df.columns:
-            label_distribution = df[label_col].value_counts().to_dict()
+            try:
+                # Convert Polars value_counts to JSON-safe dict
+                value_counts = df[label_col].value_counts()
+                label_distribution = {}
+                
+                # Extract label names and counts safely
+                if len(value_counts) > 0:
+                    labels = value_counts[label_col].to_list()
+                    counts = value_counts["count"].to_list()
+                    label_distribution = dict(zip(labels, counts))
+            except Exception as e:
+                self.logger.warning(f"Error converting label distribution: {e}")
+                label_distribution = {"conversion_error": str(e)}
         else:
             label_distribution = {}
         
-        # Return-Statistiken
+        # Return-Statistiken (JSON-safe conversion)
         return_col = f"label_fwd_ret_h{self.horizon}"
         if return_col in df.columns:
-            returns = df[return_col]
-            return_stats = {
-                "mean": returns.mean(),
-                "std": returns.std(),
-                "min": returns.min(),
-                "max": returns.max(),
-                "positive_returns": (returns > 0).sum(),
-                "negative_returns": (returns < 0).sum()
-            }
+            try:
+                returns = df[return_col]
+                return_stats = {
+                    "mean": float(returns.mean()) if returns.mean() is not None else 0.0,
+                    "std": float(returns.std()) if returns.std() is not None else 0.0,
+                    "min": float(returns.min()) if returns.min() is not None else 0.0,
+                    "max": float(returns.max()) if returns.max() is not None else 0.0,
+                    "positive_returns": int((returns > 0).sum()),
+                    "negative_returns": int((returns < 0).sum())
+                }
+            except Exception as e:
+                self.logger.warning(f"Error calculating return statistics: {e}")
+                return_stats = {"calculation_error": str(e)}
         else:
             return_stats = {}
         
@@ -418,10 +451,19 @@ class BarDatasetBuilder:
 
 if __name__ == "__main__":
     # Test des Bar Dataset Builders
-    from nautilus_trader.model.identifiers import InstrumentId
-    from nautilus_trader.model.enums import BarType
-    from nautilus_trader.model.data import Bar
     import time
+    
+    # Mock Bar for testing
+    @dataclass
+    class MockBar:
+        bar_type: str
+        open: float
+        high: float
+        low: float
+        close: float
+        volume: float
+        ts_event: int
+        ts_init: int
     
     print("🧪 Testing BarDatasetBuilder...")
     
@@ -429,15 +471,13 @@ if __name__ == "__main__":
     builder = BarDatasetBuilder(horizon=3, min_bars=5)
     
     # Generiere Test-Bars
-    instrument_id = InstrumentId.from_str("EUR/USD.SIM")
-    
     for i in range(10):
         # Simuliere Preis-Bewegung
         base_price = 1.1000
         price_change = (i - 5) * 0.0001
         
-        bar = Bar(
-            bar_type=BarType.from_str("EUR/USD.SIM-1-MINUTE-BID-EXTERNAL"),
+        bar = MockBar(
+            bar_type="EUR/USD.SIM-1-MINUTE-BID-EXTERNAL",
             open=base_price + price_change,
             high=base_price + price_change + 0.0002,
             low=base_price + price_change - 0.0001,

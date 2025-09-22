@@ -1,0 +1,85 @@
+{
+  "test1_tickdata_files": {
+    "success": true,
+    "files_found": 5,
+    "total_files": 5,
+    "total_size_mb": 112.58230590820312,
+    "available_files": [
+      {
+        "file": "EURUSD-2025-07_part1.parquet",
+        "size_mb": 22.571022033691406,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part2.parquet",
+        "size_mb": 22.4644832611084,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part3.parquet",
+        "size_mb": 22.420403480529785,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part4.parquet",
+        "size_mb": 22.5380916595459,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part5.parquet",
+        "size_mb": 22.588305473327637,
+        "exists": true
+      }
+    ]
+  },
+  "test2_tickdata_processor": {
+    "success": true,
+    "tickdata_loaded": 10000,
+    "load_time": 0.7120580673217773,
+    "processing_speed": 14089.914280809711,
+    "ohlcv_results": {
+      "1m": 1,
+      "5m": 1,
+      "15m": 1
+    },
+    "columns": [
+      "symbol",
+      "bid",
+      "ask",
+      "mid",
+      "spread"
+    ],
+    "date_range": {
+      "start": "1970-01-01 00:00:00+00:00",
+      "end": "1970-01-01 00:00:00.000009999+00:00"
+    }
+  },
+  "test3_professional_pipeline": {
+    "success": true,
+    "initialization": true,
+    "execution_time": 4.5778961181640625,
+    "ticks_processed": 5000,
+    "ohlcv_bars": 1,
+    "processing_speed": 7296.852873123293,
+    "pipeline_mode": "professional_tickdata"
+  },
+  "test4_top5_integration": {
+    "success": true,
+    "pipeline_success_rate": 1.0,
+    "tickdata_loaded": 0,
+    "total_bars": 0,
+    "strategies_generated": 3,
+    "execution_time": 0.0030612945556640625,
+    "pipeline_quality": "excellent"
+  },
+  "test5_end_to_end_flow": {
+    "success": true,
+    "data_flow": "complete",
+    "files_available": 5,
+    "ticks_processed": 1000,
+    "ohlcv_bars": 1,
+    "json_reports": 3,
+    "pine_scripts": 3,
+    "pipeline_success_rate": 1.0
+  }
+}

@@ -17,7 +17,20 @@ from datetime import datetime, timezone
 import logging
 import math
 
-from nautilus_trader.model.data import Bar
+# Use flexible Bar type (can be Nautilus Bar or Mock Bar)
+from typing import Protocol
+
+class BarProtocol(Protocol):
+    """Protocol for Bar objects (Nautilus or Mock)"""
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+    ts_init: int
+
+# Type alias for flexibility  
+Bar = BarProtocol
 
 
 class EnhancedFeatureExtractor:

@@ -1,0 +1,63 @@
+# 📊 Autonomous Analysis Results - Platzhalter
+
+**Original File:** `autonomous_analysis_results.json`  
+**Size:** 86MB  
+**Type:** Large JSON analysis results  
+
+## 📋 File Description
+
+This file contains comprehensive autonomous analysis results from the AI-Indicator-Optimizer system, including:
+
+- **Performance Metrics:** Detailed system performance analysis
+- **AI Model Results:** MiniCPM-4.1-8B vision analysis outputs
+- **Strategy Evaluations:** Complete strategy ranking and evaluation data
+- **Processing Statistics:** Tick processing and performance benchmarks
+
+## 🔄 How to Regenerate
+
+To regenerate this file, run:
+
+```bash
+# Activate virtual environment
+source test_env/bin/activate
+
+# Run autonomous analysis
+python -m ai_indicator_optimizer.main_application --mode autonomous_analysis
+
+# Or run specific analysis components
+python demo_baustein_b3_working.py
+python test_enhanced_fine_tuning_pipeline.py
+```
+
+## 📊 Expected Content Structure
+
+```json
+{
+  "analysis_timestamp": "2025-09-22T23:45:00Z",
+  "system_performance": {
+    "tick_processing_rate": 27273,
+    "strategy_evaluations_per_minute": 130123,
+    "hardware_utilization": 0.95
+  },
+  "ai_results": {
+    "vision_analyses": [...],
+    "strategy_rankings": [...],
+    "confidence_scores": [...]
+  },
+  "benchmarks": {
+    "processing_time": 528,
+    "total_ticks": 14400075,
+    "success_rate": 1.0
+  }
+}
+```
+
+## ⚠️ Note
+
+This is a placeholder file. The original 86MB JSON file contains sensitive analysis data and is too large for GitHub. Generate locally using the commands above.
+
+---
+
+**📅 Generated:** September 22, 2025  
+**🎯 Status:** Placeholder for 86MB analysis results  
+**🔄 Regeneration:** Run autonomous analysis pipeline

@@ -1,0 +1,54 @@
+{
+  "config": {
+    "model_name": "minicpm-4.1-8b",
+    "output_dir": "./test_models/mini_training",
+    "cache_dir": "./models/cache",
+    "learning_rate": 0.001,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 4,
+    "num_epochs": 2,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01,
+    "max_grad_norm": 1.0,
+    "use_mixed_precision": false,
+    "use_gradient_checkpointing": true,
+    "use_flash_attention": true,
+    "dataloader_num_workers": 2,
+    "forward_return_horizon": 5,
+    "return_thresholds": {
+      "buy_threshold": 0.0003,
+      "sell_threshold": -0.0003
+    },
+    "include_technical_indicators": true,
+    "save_steps": 50,
+    "save_total_limit": 3,
+    "resume_from_checkpoint": null,
+    "logging_steps": 5,
+    "eval_steps": 100,
+    "log_predictions": true
+  },
+  "stats": {
+    "total_entries": 495,
+    "buffer_size": 6,
+    "buffer_capacity": 6,
+    "horizon": 5,
+    "label_distribution": {
+      "SELL": 138,
+      "BUY": 100,
+      "HOLD": 257
+    },
+    "return_statistics": {
+      "mean": -6.893271145416225e-05,
+      "std": 0.00041026860196592186,
+      "min": -0.0013713735217527612,
+      "max": 0.0009263592249049157,
+      "positive_returns": 224,
+      "negative_returns": 271
+    },
+    "instruments": [
+      "EUR/USD"
+    ],
+    "technical_indicators_enabled": true
+  },
+  "created_at": "2025-09-22T23:47:06.797006"
+}

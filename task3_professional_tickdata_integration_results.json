@@ -1,0 +1,143 @@
+{
+  "file_availability": {
+    "total_files": 5,
+    "available_files": 5,
+    "total_size_mb": 112.58230590820312,
+    "files_detail": [
+      {
+        "file": "EURUSD-2025-07_part1.parquet",
+        "size_mb": 22.571022033691406,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part2.parquet",
+        "size_mb": 22.4644832611084,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part3.parquet",
+        "size_mb": 22.420403480529785,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part4.parquet",
+        "size_mb": 22.5380916595459,
+        "exists": true
+      },
+      {
+        "file": "EURUSD-2025-07_part5.parquet",
+        "size_mb": 22.588305473327637,
+        "exists": true
+      }
+    ],
+    "success": true
+  },
+  "tickdata_loading": {
+    "tickdata_loaded": true,
+    "total_ticks": 50000,
+    "loading_time": 0.7040252685546875,
+    "ticks_per_second": 71020.17815730727,
+    "columns": [
+      "symbol",
+      "bid",
+      "ask",
+      "mid",
+      "spread"
+    ],
+    "date_range": {
+      "start": "1970-01-01 00:00:00+00:00",
+      "end": "1970-01-01 00:00:00.000049999+00:00"
+    },
+    "data_quality": {
+      "has_bid": true,
+      "has_ask": true,
+      "has_mid": true,
+      "has_spread": true
+    },
+    "success": true
+  },
+  "ohlcv_generation": {
+    "ohlcv_generated": true,
+    "source_ticks": 10000,
+    "timeframes_tested": [
+      "1m",
+      "5m",
+      "15m",
+      "1h"
+    ],
+    "ohlcv_results": {
+      "1m": {
+        "bars_generated": 1,
+        "generation_time": 0.002982616424560547,
+        "has_ohlcv": true,
+        "has_volume": true
+      },
+      "5m": {
+        "bars_generated": 1,
+        "generation_time": 0.0017087459564208984,
+        "has_ohlcv": true,
+        "has_volume": true
+      },
+      "15m": {
+        "bars_generated": 1,
+        "generation_time": 0.0015606880187988281,
+        "has_ohlcv": true,
+        "has_volume": true
+      },
+      "1h": {
+        "bars_generated": 1,
+        "generation_time": 0.0013763904571533203,
+        "has_ohlcv": true,
+        "has_volume": true
+      }
+    },
+    "total_bars": 4,
+    "success": true
+  },
+  "pipeline_integration": {
+    "pipeline_integration": true,
+    "initialization": true,
+    "pipeline_mode": "fallback",
+    "ai_services": {
+      "counts": 4,
+      "last_analysis_time": null,
+      "live_control": "LiveControlStatus(strategy_id='PROFESSIONAL-TEST', is_paused=False, is_emergency_stopped=False, current_parameters={}, last_update='2025-09-22T21:24:10.359363', performance_metrics={'commands_processed': 0.0, 'uptime_seconds': 3600.0, 'last_command_age_seconds': 0.0})"
+    },
+    "nautilus_available": false,
+    "tickdata_processor": true,
+    "success": true
+  },
+  "e2e_execution": {
+    "e2e_execution": true,
+    "pipeline_success": true,
+    "execution_time": 4.486608028411865,
+    "professional_tickdata": {
+      "ticks_processed": 15000,
+      "ohlcv_bars": 1,
+      "processing_speed": 22467.078527300648,
+      "data_quality": "professional_grade"
+    },
+    "analysis": {
+      "vision_analysis": true,
+      "features_analysis": true,
+      "analysis_success": true
+    },
+    "strategies": {
+      "strategies_evaluated": 1,
+      "strategies_available": true
+    },
+    "performance": {
+      "total_execution_time": 4.486608028411865,
+      "pipeline_mode": "professional_tickdata"
+    },
+    "success": true
+  },
+  "summary": {
+    "total_tests": 5,
+    "successful_tests": 5,
+    "success_rate": 100.0,
+    "total_test_time": 5.990094423294067,
+    "overall_success": true,
+    "timestamp": 1758569054.95341
+  }
+}

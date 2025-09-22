@@ -1,0 +1,42 @@
+{
+  "strategy_id": "strategy_3_2_USD/JPY_4h",
+  "strategy_name": "AI_Strategy_USD_JPY_4h",
+  "symbol": "USD/JPY",
+  "timeframe": "4h",
+  "generation_timestamp": "2025-09-22T12:33:25.794224",
+  "syntax_valid": false,
+  "validation_errors": [
+    "Line 2: Unmatched parentheses",
+    "Line 9: Unmatched parentheses",
+    "Line 147: Unmatched parentheses",
+    "Line 149: Unmatched parentheses",
+    "Line 162: Unmatched parentheses",
+    "Line 164: Unmatched parentheses",
+    "Line 181: Unmatched parentheses",
+    "Line 185: Unmatched parentheses",
+    "Line 188: Unmatched parentheses",
+    "Line 192: Unmatched parentheses",
+    "Line 196: Unmatched parentheses",
+    "Line 199: Unmatched parentheses",
+    "Line 217: Unmatched parentheses",
+    "Line 218: Unmatched parentheses",
+    "Line 219: Unmatched parentheses",
+    "Line 220: Unmatched parentheses",
+    "Line 223: Unmatched parentheses",
+    "Line 225: Unmatched parentheses",
+    "Line 245: Unmatched parentheses",
+    "Line 246: Unmatched parentheses",
+    "Deprecated function found: rsi(",
+    "Deprecated function found: sma(",
+    "Deprecated function found: ema("
+  ],
+  "estimated_performance": {
+    "expected_return": 0.1275,
+    "expected_risk": 0.0905,
+    "expected_sharpe": 2.125,
+    "composite_score": 0.8500000000000001
+  },
+  "code_lines": 246,
+  "code_complexity": "complex",
+  "file_path": "data/pine_scripts/AI_Strategy_USD_JPY_4h_20250922_123325.pine"
+}

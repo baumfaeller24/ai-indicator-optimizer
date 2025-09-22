@@ -1,0 +1,17 @@
+{
+  "created_at": "2025-09-22T23:47:22.451103",
+  "total_entries": 495,
+  "horizon": 5,
+  "return_thresholds": {
+    "buy_threshold": 0.0003,
+    "sell_threshold": -0.0003
+  },
+  "technical_indicators": true,
+  "instruments": [
+    "EUR/USD"
+  ],
+  "date_range": {
+    "start": "2025-09-22T21:47:22.321501",
+    "end": "2025-09-23T06:01:22.321501"
+  }
+}

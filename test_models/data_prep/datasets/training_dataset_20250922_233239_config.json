@@ -1,0 +1,36 @@
+{
+  "config": {
+    "model_name": "minicpm-4.1-8b",
+    "output_dir": "./test_models/data_prep",
+    "cache_dir": "./models/cache",
+    "learning_rate": 2e-05,
+    "batch_size": 8,
+    "gradient_accumulation_steps": 4,
+    "num_epochs": 5,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01,
+    "max_grad_norm": 1.0,
+    "use_mixed_precision": true,
+    "use_gradient_checkpointing": true,
+    "use_flash_attention": true,
+    "dataloader_num_workers": 8,
+    "forward_return_horizon": 3,
+    "return_thresholds": {
+      "buy_threshold": 0.0003,
+      "sell_threshold": -0.0003
+    },
+    "include_technical_indicators": true,
+    "save_steps": 500,
+    "save_total_limit": 3,
+    "resume_from_checkpoint": null,
+    "logging_steps": 10,
+    "eval_steps": 100,
+    "log_predictions": true
+  },
+  "stats": {
+    "total_entries": 197,
+    "buffer_size": 4,
+    "buffer_capacity": 4,
+    "horizon": 3,
+    "label_distribution": {
+      "label_name_h3": 

@@ -1,0 +1,79 @@
+{
+  "test1_pipeline_configuration": {
+    "success": true,
+    "default_config": true,
+    "custom_config": true,
+    "max_workers": 32,
+    "export_formats": 4
+  },
+  "test2_pipeline_initialization": {
+    "success": true,
+    "pipeline_initialized": true,
+    "pipeline_id": "top5_pipeline_20250922_222557",
+    "execution_mode": "development",
+    "max_workers": 16,
+    "performance_stats": 4
+  },
+  "test3_stage_execution": {
+    "success": true,
+    "initialization_success": true,
+    "analysis_success": true,
+    "init_time": 0.0023431777954101562,
+    "analysis_time": 3.790855407714844e-05,
+    "total_stages_tested": 2
+  },
+  "test4_full_pipeline_execution": {
+    "success": true,
+    "pipeline_success": true,
+    "success_rate": 1.0,
+    "pipeline_quality": "excellent",
+    "confidence_level": 1.0,
+    "execution_time": 0.0018780231475830078,
+    "stages_completed": 6,
+    "exported_files": 2
+  },
+  "test5_performance_parallelization": {
+    "success": true,
+    "performance_results": [
+      {
+        "name": "Single-threaded",
+        "workers": 1,
+        "execution_time": 0.0018291473388671875,
+        "success_rate": 1.0
+      },
+      {
+        "name": "Multi-threaded (8)",
+        "workers": 8,
+        "execution_time": 0.005808353424072266,
+        "success_rate": 1.0
+      },
+      {
+        "name": "Multi-threaded (16)",
+        "workers": 16,
+        "execution_time": 0.001934051513671875,
+        "success_rate": 1.0
+      },
+      {
+        "name": "Full parallelization (32)",
+        "workers": 32,
+        "execution_time": 0.0020966529846191406,
+        "success_rate": 1.0
+      }
+    ],
+    "best_performance": {
+      "name": "Single-threaded",
+      "workers": 1,
+      "execution_time": 0.0018291473388671875,
+      "success_rate": 1.0
+    },
+    "parallelization_tested": 4
+  },
+  "test6_export_output_validation": {
+    "success": true,
+    "output_directory_exists": true,
+    "json_files_exported": 1,
+    "pine_files_exported": 2,
+    "total_export_formats": 2,
+    "export_validation": true
+  }
+}

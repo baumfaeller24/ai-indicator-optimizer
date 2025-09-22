@@ -1,0 +1,181 @@
+{
+  "execution_timestamp": "2025-09-22T22:31:06.601551",
+  "execution_mode": "production",
+  "top5_strategies": [
+    {
+      "name": "Professional_Tickdata_Strategy_3",
+      "signal_confidence": 0.92,
+      "risk_reward_ratio": 3.2,
+      "opportunity_score": 0.86,
+      "fusion_confidence": 0.89,
+      "consistency_score": 0.83,
+      "profit_potential": 0.94,
+      "drawdown_risk": 0.12,
+      "composite_score": 0.876,
+      "portfolio_fit": 1.0,
+      "diversification_score": 0.8,
+      "risk_adjusted_score": 7.300000000000001,
+      "final_ranking_score": 0.8786,
+      "rank_position": 1
+    },
+    {
+      "name": "Professional_Tickdata_Strategy_1",
+      "signal_confidence": 0.85,
+      "risk_reward_ratio": 2.5,
+      "opportunity_score": 0.78,
+      "fusion_confidence": 0.82,
+      "consistency_score": 0.75,
+      "profit_potential": 0.88,
+      "drawdown_risk": 0.15,
+      "composite_score": 0.79075,
+      "portfolio_fit": 0.9,
+      "diversification_score": 0.8500000000000001,
+      "risk_adjusted_score": 5.2716666666666665,
+      "final_ranking_score": 0.7921666666666666,
+      "rank_position": 2
+    }
+  ],
+  "generated_scripts": [
+    {
+      "strategy_name": "Professional_Tickdata_Strategy_3",
+      "rank_position": 1,
+      "pine_script": "// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/\n// \u00a9 AI-Indicator-Optimizer\n\n//@version=5\nstrategy(\"Professional_Tickdata_Strategy_3\", overlay=true, margin_long=100, margin_short=100)\n\n// Strategy Parameters\nsignal_confidence_threshold = input.float(0.92, \"Signal Confidence Threshold\", minval=0.0, maxval=1.0)\nrisk_reward_ratio = input.float(3.2, \"Risk Reward Ratio\", minval=1.0, maxval=5.0)\nstop_loss_pct = input.float(2.0, \"Stop Loss %\", minval=0.5, maxval=10.0) / 100\ntake_profit_pct = stop_loss_pct * risk_reward_ratio\n\n// Technical Indicators\nrsi = ta.rsi(close, 14)\n[macd_line, signal_line, _] = ta.macd(close, 12, 26, 9)\nbb_upper = ta.bb(close, 20, 2)[0]\nbb_lower = ta.bb(close, 20, 2)[2]\n\n// Entry Conditions\nlong_condition = rsi < 30 and macd_line > signal_line and close < bb_lower\nshort_condition = rsi > 70 and macd_line < signal_line and close > bb_upper\n\n// Strategy Execution\nif long_condition\n    strategy.entry(\"Long\", strategy.long)\n    strategy.exit(\"Long Exit\", \"Long\", stop=close * (1 - stop_loss_pct), limit=close * (1 + take_profit_pct))\n\nif short_condition\n    strategy.entry(\"Short\", strategy.short)\n    strategy.exit(\"Short Exit\", \"Short\", stop=close * (1 + stop_loss_pct), limit=close * (1 - take_profit_pct))\n\n// Plotting\nplot(bb_upper, \"BB Upper\", color=color.blue)\nplot(bb_lower, \"BB Lower\", color=color.blue)\nplotshape(long_condition, \"Long Signal\", shape.triangleup, location.belowbar, color.green, size=size.small)\nplotshape(short_condition, \"Short Signal\", shape.triangledown, location.abovebar, color.red, size=size.small)\n",
+      "script_length": 1621,
+      "generation_success": true
+    },
+    {
+      "strategy_name": "Professional_Tickdata_Strategy_1",
+      "rank_position": 2,
+      "pine_script": "// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/\n// \u00a9 AI-Indicator-Optimizer\n\n//@version=5\nstrategy(\"Professional_Tickdata_Strategy_1\", overlay=true, margin_long=100, margin_short=100)\n\n// Strategy Parameters\nsignal_confidence_threshold = input.float(0.85, \"Signal Confidence Threshold\", minval=0.0, maxval=1.0)\nrisk_reward_ratio = input.float(2.5, \"Risk Reward Ratio\", minval=1.0, maxval=5.0)\nstop_loss_pct = input.float(2.0, \"Stop Loss %\", minval=0.5, maxval=10.0) / 100\ntake_profit_pct = stop_loss_pct * risk_reward_ratio\n\n// Technical Indicators\nrsi = ta.rsi(close, 14)\n[macd_line, signal_line, _] = ta.macd(close, 12, 26, 9)\nbb_upper = ta.bb(close, 20, 2)[0]\nbb_lower = ta.bb(close, 20, 2)[2]\n\n// Entry Conditions\nlong_condition = rsi < 30 and macd_line > signal_line and close < bb_lower\nshort_condition = rsi > 70 and macd_line < signal_line and close > bb_upper\n\n// Strategy Execution\nif long_condition\n    strategy.entry(\"Long\", strategy.long)\n    strategy.exit(\"Long Exit\", \"Long\", stop=close * (1 - stop_loss_pct), limit=close * (1 + take_profit_pct))\n\nif short_condition\n    strategy.entry(\"Short\", strategy.short)\n    strategy.exit(\"Short Exit\", \"Short\", stop=close * (1 + stop_loss_pct), limit=close * (1 - take_profit_pct))\n\n// Plotting\nplot(bb_upper, \"BB Upper\", color=color.blue)\nplot(bb_lower, \"BB Lower\", color=color.blue)\nplotshape(long_condition, \"Long Signal\", shape.triangleup, location.belowbar, color.green, size=size.small)\nplotshape(short_condition, \"Short Signal\", shape.triangledown, location.abovebar, color.red, size=size.small)\n",
+      "script_length": 1621,
+      "generation_success": true
+    }
+  ],
+  "pipeline_summary": {
+    "initialization": {
+      "initialized_components": {
+        "tickdata_pipeline": true,
+        "torchserve_handler": true,
+        "ollama_client": true,
+        "ai_evaluator": true,
+        "live_control_manager": false,
+        "enhanced_logger": true,
+        "nautilus_node": false
+      },
+      "success_rate": 0.7142857142857143,
+      "total_components": 7,
+      "successful_components": 5
+    },
+    "data_analysis": {
+      "tickdata_loaded": 0,
+      "ohlcv_bars": {},
+      "total_bars": 0,
+      "market_context": {
+        "symbols": [
+          "EUR/USD"
+        ],
+        "timeframes": [
+          "5m"
+        ],
+        "analysis_timestamp": "2025-09-22T22:31:06.601362"
+      }
+    },
+    "strategy_evaluation": {
+      "evaluated_strategies": [
+        {
+          "name": "Professional_Tickdata_Strategy_3",
+          "signal_confidence": 0.92,
+          "risk_reward_ratio": 3.2,
+          "opportunity_score": 0.86,
+          "fusion_confidence": 0.89,
+          "consistency_score": 0.83,
+          "profit_potential": 0.94,
+          "drawdown_risk": 0.12,
+          "composite_score": 0.876
+        },
+        {
+          "name": "Professional_Tickdata_Strategy_1",
+          "signal_confidence": 0.85,
+          "risk_reward_ratio": 2.5,
+          "opportunity_score": 0.78,
+          "fusion_confidence": 0.82,
+          "consistency_score": 0.75,
+          "profit_potential": 0.88,
+          "drawdown_risk": 0.15,
+          "composite_score": 0.79075
+        },
+        {
+          "name": "Professional_Tickdata_Strategy_2",
+          "signal_confidence": 0.79,
+          "risk_reward_ratio": 2.1,
+          "opportunity_score": 0.73,
+          "fusion_confidence": 0.77,
+          "consistency_score": 0.71,
+          "profit_potential": 0.81,
+          "drawdown_risk": 0.18,
+          "composite_score": 0.7307500000000001
+        }
+      ],
+      "total_strategies": 3,
+      "evaluation_success": true
+    },
+    "ranking_calculation": {
+      "top5_strategies": [
+        {
+          "name": "Professional_Tickdata_Strategy_3",
+          "signal_confidence": 0.92,
+          "risk_reward_ratio": 3.2,
+          "opportunity_score": 0.86,
+          "fusion_confidence": 0.89,
+          "consistency_score": 0.83,
+          "profit_potential": 0.94,
+          "drawdown_risk": 0.12,
+          "composite_score": 0.876,
+          "portfolio_fit": 1.0,
+          "diversification_score": 0.8,
+          "risk_adjusted_score": 7.300000000000001,
+          "final_ranking_score": 0.8786,
+          "rank_position": 1
+        },
+        {
+          "name": "Professional_Tickdata_Strategy_1",
+          "signal_confidence": 0.85,
+          "risk_reward_ratio": 2.5,
+          "opportunity_score": 0.78,
+          "fusion_confidence": 0.82,
+          "consistency_score": 0.75,
+          "profit_potential": 0.88,
+          "drawdown_risk": 0.15,
+          "composite_score": 0.79075,
+          "portfolio_fit": 0.9,
+          "diversification_score": 0.8500000000000001,
+          "risk_adjusted_score": 5.2716666666666665,
+          "final_ranking_score": 0.7921666666666666,
+          "rank_position": 2
+        }
+      ],
+      "total_ranked_strategies": 3,
+      "ranking_success": true
+    },
+    "pine_script_generation": {
+      "generated_scripts": [
+        {
+          "strategy_name": "Professional_Tickdata_Strategy_3",
+          "rank_position": 1,
+          "pine_script": "// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/\n// \u00a9 AI-Indicator-Optimizer\n\n//@version=5\nstrategy(\"Professional_Tickdata_Strategy_3\", overlay=true, margin_long=100, margin_short=100)\n\n// Strategy Parameters\nsignal_confidence_threshold = input.float(0.92, \"Signal Confidence Threshold\", minval=0.0, maxval=1.0)\nrisk_reward_ratio = input.float(3.2, \"Risk Reward Ratio\", minval=1.0, maxval=5.0)\nstop_loss_pct = input.float(2.0, \"Stop Loss %\", minval=0.5, maxval=10.0) / 100\ntake_profit_pct = stop_loss_pct * risk_reward_ratio\n\n// Technical Indicators\nrsi = ta.rsi(close, 14)\n[macd_line, signal_line, _] = ta.macd(close, 12, 26, 9)\nbb_upper = ta.bb(close, 20, 2)[0]\nbb_lower = ta.bb(close, 20, 2)[2]\n\n// Entry Conditions\nlong_condition = rsi < 30 and macd_line > signal_line and close < bb_lower\nshort_condition = rsi > 70 and macd_line < signal_line and close > bb_upper\n\n// Strategy Execution\nif long_condition\n    strategy.entry(\"Long\", strategy.long)\n    strategy.exit(\"Long Exit\", \"Long\", stop=close * (1 - stop_loss_pct), limit=close * (1 + take_profit_pct))\n\nif short_condition\n    strategy.entry(\"Short\", strategy.short)\n    strategy.exit(\"Short Exit\", \"Short\", stop=close * (1 + stop_loss_pct), limit=close * (1 - take_profit_pct))\n\n// Plotting\nplot(bb_upper, \"BB Upper\", color=color.blue)\nplot(bb_lower, \"BB Lower\", color=color.blue)\nplotshape(long_condition, \"Long Signal\", shape.triangleup, location.belowbar, color.green, size=size.small)\nplotshape(short_condition, \"Short Signal\", shape.triangledown, location.abovebar, color.red, size=size.small)\n",
+          "script_length": 1621,
+          "generation_success": true
+        },
+        {
+          "strategy_name": "Professional_Tickdata_Strategy_1",
+          "rank_position": 2,
+          "pine_script": "// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/\n// \u00a9 AI-Indicator-Optimizer\n\n//@version=5\nstrategy(\"Professional_Tickdata_Strategy_1\", overlay=true, margin_long=100, margin_short=100)\n\n// Strategy Parameters\nsignal_confidence_threshold = input.float(0.85, \"Signal Confidence Threshold\", minval=0.0, maxval=1.0)\nrisk_reward_ratio = input.float(2.5, \"Risk Reward Ratio\", minval=1.0, maxval=5.0)\nstop_loss_pct = input.float(2.0, \"Stop Loss %\", minval=0.5, maxval=10.0) / 100\ntake_profit_pct = stop_loss_pct * risk_reward_ratio\n\n// Technical Indicators\nrsi = ta.rsi(close, 14)\n[macd_line, signal_line, _] = ta.macd(close, 12, 26, 9)\nbb_upper = ta.bb(close, 20, 2)[0]\nbb_lower = ta.bb(close, 20, 2)[2]\n\n// Entry Conditions\nlong_condition = rsi < 30 and macd_line > signal_line and close < bb_lower\nshort_condition = rsi > 70 and macd_line < signal_line and close > bb_upper\n\n// Strategy Execution\nif long_condition\n    strategy.entry(\"Long\", strategy.long)\n    strategy.exit(\"Long Exit\", \"Long\", stop=close * (1 - stop_loss_pct), limit=close * (1 + take_profit_pct))\n\nif short_condition\n    strategy.entry(\"Short\", strategy.short)\n    strategy.exit(\"Short Exit\", \"Short\", stop=close * (1 + stop_loss_pct), limit=close * (1 - take_profit_pct))\n\n// Plotting\nplot(bb_upper, \"BB Upper\", color=color.blue)\nplot(bb_lower, \"BB Lower\", color=color.blue)\nplotshape(long_condition, \"Long Signal\", shape.triangleup, location.belowbar, color.green, size=size.small)\nplotshape(short_condition, \"Short Signal\", shape.triangledown, location.abovebar, color.red, size=size.small)\n",
+          "script_length": 1621,
+          "generation_success": true
+        }
+      ],
+      "total_scripts": 2,
+      "generation_success": true
+    }
+  }
+}

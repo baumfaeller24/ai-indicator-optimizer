@@ -1,0 +1,68 @@
+# 📊 Large Forex Parquet Files - Platzhalter
+
+**Directory:** `data/forex_converted/`  
+**Large Files (>25MB):**
+- `EURUSD-2025-04.parquet` (85MB)
+- `EURUSD-2025-05.parquet` (78MB)  
+- `EURUSD-2025-06.parquet` (51MB)
+
+## 📋 File Description
+
+These files contain processed EUR/USD forex data in Parquet format:
+
+- **EURUSD-2025-04.parquet:** April 2025 EUR/USD tick data (85MB)
+- **EURUSD-2025-05.parquet:** May 2025 EUR/USD tick data (78MB)
+- **EURUSD-2025-06.parquet:** June 2025 EUR/USD tick data (51MB)
+
+## 🔄 How to Regenerate
+
+To regenerate these files, run:
+
+```bash
+# Activate virtual environment
+source test_env/bin/activate
+
+# Process forex data
+python -m ai_indicator_optimizer.data.dukascopy_connector --month 2025-04
+python -m ai_indicator_optimizer.data.dukascopy_connector --month 2025-05
+python -m ai_indicator_optimizer.data.dukascopy_connector --month 2025-06
+
+# Or use the main application
+python -m ai_indicator_optimizer.main_application --mode data_processing
+```
+
+## 📊 Data Structure
+
+Each Parquet file contains:
+
+```
+Columns:
+├── timestamp: datetime64[ns]
+├── bid: float64
+├── ask: float64
+├── bid_volume: float64
+├── ask_volume: float64
+├── mid_price: float64
+└── spread: float64
+
+Typical Size: 50-85MB per month
+Rows: ~2-3 million ticks per month
+```
+
+## 🎯 Usage
+
+These files are used for:
+- **Tick Data Analysis:** High-frequency market analysis
+- **OHLCV Generation:** Bar data creation for multiple timeframes
+- **AI Training:** Multimodal dataset preparation
+- **Backtesting:** Historical strategy validation
+
+## ⚠️ Note
+
+These are placeholder files. The original Parquet files are too large for GitHub (>25MB limit). Generate locally using the DukascopyConnector.
+
+---
+
+**📅 Generated:** September 22, 2025  
+**🎯 Status:** Placeholder for 214MB total forex data  
+**🔄 Regeneration:** Run DukascopyConnector for each month

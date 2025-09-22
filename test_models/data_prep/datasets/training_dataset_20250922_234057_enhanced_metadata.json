@@ -1,0 +1,16 @@
+{
+  "enhanced_samples_count": 200,
+  "fusion_statistics": {
+    "avg_confidence": 0.24000000000000007,
+    "avg_processing_time": 0.00011963367462158202,
+    "fusion_agent_used": true,
+    "confidence_range": {
+      "min": 0.24,
+      "max": 0.24
+    },
+    "processing_time_range": {
+      "min": 8.487701416015625e-05,
+      "max": 0.00045299530029296875
+    }
+  }
+}

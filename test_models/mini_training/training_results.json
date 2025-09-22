@@ -1,0 +1,19 @@
+{
+  "training_time": 0.6521041393280029,
+  "best_loss": 6.658241081237793,
+  "final_metrics": {
+    "epoch": 1,
+    "train_loss": 13.745286503223458,
+    "train_reg_loss": 11.75089940368527,
+    "train_cls_loss": 3.988774082501127,
+    "val_loss": 6.658241081237793,
+    "val_reg_loss": 6.022784423828125,
+    "val_cls_loss": 1.2709132599830628,
+    "val_accuracy": 0.46464646464646464,
+    "learning_rate": 0.000998721505117274,
+    "gpu_memory_gb": 0.01936384
+  },
+  "total_epochs": 2,
+  "model_path": "./test_models/mini_training",
+  "dataset_samples": 495
+}

@@ -1,0 +1,89 @@
+{
+  "test1_ranking_components": {
+    "success": true,
+    "components_initialized": true,
+    "criteria_count": 7,
+    "weights_sum": 1.0,
+    "factory_function": true
+  },
+  "test2_multi_criteria": {
+    "success": true,
+    "strategies_evaluated": 3,
+    "strategies_filtered": 1,
+    "top_strategy": "High_Risk_Reward_Strategy",
+    "top_score": 0.81
+  },
+  "test3_portfolio_optimization": {
+    "success": true,
+    "portfolio_fits": [
+      0.8271804394649367,
+      0.3626077190833368,
+      0.8139582043103877
+    ],
+    "diversification_scores": [
+      0.3437319924590632,
+      0.7034306051182107,
+      0.3596986126591471
+    ],
+    "diversification_logic": "True",
+    "mean_portfolio_fit": 0.6679154542862203,
+    "mean_diversification": 0.46895373674547364
+  },
+  "test4_risk_adjusted_scoring": {
+    "success": true,
+    "risk_scores": [
+      10,
+      7.308333333333333
+    ],
+    "confidence_intervals_count": 3,
+    "projections_count": 6,
+    "low_risk_score": 10,
+    "high_risk_score": 7.308333333333333
+  },
+  "test5_integration": {
+    "success": true,
+    "enhanced_ranking_used": true,
+    "top_strategies_count": 3,
+    "enhanced_features_count": 5,
+    "execution_time": 0.7233321666717529,
+    "pipeline_quality": "excellent",
+    "has_portfolio_fit": true,
+    "has_diversification": true,
+    "has_risk_adjusted": true,
+    "has_confidence_intervals": true,
+    "has_projections": true
+  },
+  "test6_performance": {
+    "success": true,
+    "performance_results": [
+      {
+        "strategy_count": 5,
+        "execution_time": 0.002140045166015625,
+        "strategies_per_second": 2336.3992869875224,
+        "ranked_strategies": 5
+      },
+      {
+        "strategy_count": 10,
+        "execution_time": 0.004504203796386719,
+        "strategies_per_second": 2220.148210882913,
+        "ranked_strategies": 10
+      },
+      {
+        "strategy_count": 25,
+        "execution_time": 0.014698266983032227,
+        "strategies_per_second": 1700.880792875797,
+        "ranked_strategies": 25
+      },
+      {
+        "strategy_count": 50,
+        "execution_time": 0.048139333724975586,
+        "strategies_per_second": 1038.6516831673362,
+        "ranked_strategies": 50
+      }
+    ],
+    "avg_execution_time": 0.01737046241760254,
+    "max_strategies_per_sec": 2336.3992869875224,
+    "performance_acceptable": true,
+    "scalability_tested": 4
+  }
+}

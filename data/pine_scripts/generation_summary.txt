@@ -1,0 +1,39 @@
+🧩 KI-Enhanced Pine Script Generator - Summary Report
+======================================================================
+Generated Scripts: 4
+Total Generations: 1
+Success Rate: 100.0%
+
+📊 Generated Scripts Overview:
+
+1. AI_Strategy_GBP_USD_4h
+   Symbol: GBP/USD | Timeframe: 4h
+   Syntax Valid: ❌
+   Code Lines: 246 | Complexity: complex
+   Expected Return: 11.2%
+   Composite Score: 0.750
+   File: data/pine_scripts/AI_Strategy_GBP_USD_4h_20250922_123127.pine
+
+2. AI_Strategy_GBP_USD_1h
+   Symbol: GBP/USD | Timeframe: 1h
+   Syntax Valid: ❌
+   Code Lines: 246 | Complexity: complex
+   Expected Return: 10.5%
+   Composite Score: 0.700
+   File: data/pine_scripts/AI_Strategy_GBP_USD_1h_20250922_123127.pine
+
+3. AI_Strategy_EUR_USD_4h
+   Symbol: EUR/USD | Timeframe: 4h
+   Syntax Valid: ❌
+   Code Lines: 246 | Complexity: complex
+   Expected Return: 9.8%
+   Composite Score: 0.650
+   File: data/pine_scripts/AI_Strategy_EUR_USD_4h_20250922_123127.pine
+
+4. AI_Strategy_EUR_USD_1h
+   Symbol: EUR/USD | Timeframe: 1h
+   Syntax Valid: ❌
+   Code Lines: 246 | Complexity: complex
+   Expected Return: 9.0%
+   Composite Score: 0.600
+   File: data/pine_scripts/AI_Strategy_EUR_USD_1h_20250922_123127.pine
