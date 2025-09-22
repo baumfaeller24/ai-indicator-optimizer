@@ -1,4 +1,11 @@
 
+# ===== LARGE DATA FILES (>25MB) =====
+# These files are too large for GitHub and have placeholders
+autonomous_analysis_results.json
+data/forex_converted/EURUSD-*.parquet
+data/mega_pretraining/mega_tickdata_all_months.parquet
+forex/EURUSD-*.zip
+
 # Python
 __pycache__/
 *.py[cod]
