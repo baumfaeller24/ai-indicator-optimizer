@@ -1,24 +1,42 @@
+#!/usr/bin/env python3
 """
-Enhanced Ranking Engine Implementation
-Task 5: Enhanced Ranking Engine Implementation
+Enhanced Ranking Engine - Task 5 Implementation
 
-This module implements the advanced ranking system with multiple criteria,
-portfolio optimization, and risk-adjusted scoring for the Top-5 strategies system.
+Implementiert Multi-Kriterien Evaluator mit 7+ Ranking-Faktoren für das
+Top-5-Strategien-Ranking-System (Baustein C2).
+
+Features:
+- Multi-Kriterien Evaluator mit 7+ Ranking-Faktoren
+- Portfolio-Fit-Calculator für Diversifikations-Scoring
+- Risk-Adjusted-Scorer mit Sharpe-ähnlicher Berechnung
+- Enhanced Ranking mit Final-Score-Computation
+- Confidence-Intervals und Performance-Projections
+
+Author: AI Indicator Optimizer Team
+Date: 2025-09-22
 """
 
 import logging
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass, field
+from typing import Dict, List, Any, Optional, Tuple, Union
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import time
 from datetime import datetime
 import json
+import math
+from scipy import stats
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.cluster import KMeans
 
-logger = logging.getLogger(__name__)
+
+# ==================== ENUMS & CONSTANTS ====================
 
 class StrategyRankingCriteria(Enum):
-    """Strategy ranking criteria enumeration"""
+    """Ranking criteria for strategy evaluation"""
     SIGNAL_CONFIDENCE = "signal_confidence"
     RISK_REWARD_RATIO = "risk_reward_ratio"
     OPPORTUNITY_SCORE = "opportunity_score"
@@ -26,10 +44,26 @@ class StrategyRankingCriteria(Enum):
     CONSISTENCY_SCORE = "consistency_score"
     PROFIT_POTENTIAL = "profit_potential"
     DRAWDOWN_RISK = "drawdown_risk"
+    PORTFOLIO_FIT = "portfolio_fit"
+    DIVERSIFICATION_SCORE = "diversification_score"
+    MARKET_ADAPTABILITY = "market_adaptability"
+
+
+class RiskLevel(Enum):
+    """Risk level classification"""
+    VERY_LOW = "very_low"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    VERY_HIGH = "very_high"
+
+
+# ==================== DATA MODELS ====================
 
 @dataclass
 class StrategyScore:
-    """Base strategy score from Baustein B3"""
+    """Strategy score from Baustein B3 AI Strategy Evaluator"""
+    strategy_id: str
     name: str
     signal_confidence: float
     risk_reward_ratio: float
@@ -38,23 +72,25 @@ class StrategyScore:
     consistency_score: float
     profit_potential: float
     drawdown_risk: float
-    composite_score: float = 0.0
+    composite_score: float
+    metadata: Dict[str, Any] = field(default_factory=dict)
     
-    def __post_init__(self):
-        if self.composite_score == 0.0:
-            self.composite_score = self._calculate_composite_score()
-    
-    def _calculate_composite_score(self) -> float:
-        """Calculate composite score from individual metrics"""
-        return (
-            self.signal_confidence * 0.2 +
-            (self.risk_reward_ratio / 4.0) * 0.15 +
-            self.opportunity_score * 0.15 +
-            self.fusion_confidence * 0.15 +
-            self.consistency_score * 0.15 +
-            self.profit_potential * 0.15 +
-            (1.0 - self.drawdown_risk) * 0.05
-        )
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary"""
+        return {
+            "strategy_id": self.strategy_id,
+            "name": self.name,
+            "signal_confidence": self.signal_confidence,
+            "risk_reward_ratio": self.risk_reward_ratio,
+            "opportunity_score": self.opportunity_score,
+            "fusion_confidence": self.fusion_confidence,
+            "consistency_score": self.consistency_score,
+            "profit_potential": self.profit_potential,
+            "drawdown_risk": self.drawdown_risk,
+            "composite_score": self.composite_score,
+            "metadata": self.metadata
+        }
+
 
 @dataclass
 class EnhancedStrategyRanking:
@@ -63,134 +99,242 @@ class EnhancedStrategyRanking:
     portfolio_fit: float
     diversification_score: float
     risk_adjusted_score: float
+    market_adaptability: float
     final_ranking_score: float
     rank_position: int
-    confidence_intervals: Dict[str, Tuple[float, float]] = field(default_factory=dict)
-    performance_projections: Dict[str, float] = field(default_factory=dict)
-    risk_metrics: Dict[str, float] = field(default_factory=dict)
+    confidence_intervals: Dict[str, Tuple[float, float]]
+    performance_projections: Dict[str, float]
+    risk_metrics: Dict[str, float]
+    risk_level: RiskLevel
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary"""
+        return {
+            "strategy": self.strategy.to_dict(),
+            "portfolio_fit": self.portfolio_fit,
+            "diversification_score": self.diversification_score,
+            "risk_adjusted_score": self.risk_adjusted_score,
+            "market_adaptability": self.market_adaptability,
+            "final_ranking_score": self.final_ranking_score,
+            "rank_position": self.rank_position,
+            "confidence_intervals": self.confidence_intervals,
+            "performance_projections": self.performance_projections,
+            "risk_metrics": self.risk_metrics,
+            "risk_level": self.risk_level.value
+        }
+
 
 @dataclass
 class RankingConfig:
     """Configuration for enhanced ranking engine"""
-    # Ranking criteria weights
     criteria_weights: Dict[StrategyRankingCriteria, float] = field(default_factory=lambda: {
         StrategyRankingCriteria.SIGNAL_CONFIDENCE: 0.20,
-        StrategyRankingCriteria.RISK_REWARD_RATIO: 0.15,
+        StrategyRankingCriteria.RISK_REWARD_RATIO: 0.18,
         StrategyRankingCriteria.OPPORTUNITY_SCORE: 0.15,
-        StrategyRankingCriteria.FUSION_CONFIDENCE: 0.15,
-        StrategyRankingCriteria.CONSISTENCY_SCORE: 0.15,
-        StrategyRankingCriteria.PROFIT_POTENTIAL: 0.15,
-        StrategyRankingCriteria.DRAWDOWN_RISK: 0.05
+        StrategyRankingCriteria.FUSION_CONFIDENCE: 0.12,
+        StrategyRankingCriteria.CONSISTENCY_SCORE: 0.10,
+        StrategyRankingCriteria.PROFIT_POTENTIAL: 0.10,
+        StrategyRankingCriteria.DRAWDOWN_RISK: 0.08,
+        StrategyRankingCriteria.PORTFOLIO_FIT: 0.04,
+        StrategyRankingCriteria.DIVERSIFICATION_SCORE: 0.02,
+        StrategyRankingCriteria.MARKET_ADAPTABILITY: 0.01
     })
-    
-    # Portfolio optimization weights
-    portfolio_fit_weight: float = 0.20
-    diversification_weight: float = 0.10
-    risk_adjustment_weight: float = 0.10
-    base_score_weight: float = 0.60
-    
-    # Risk-free rate for Sharpe-like calculations
-    risk_free_rate: float = 0.02
-    
-    # Confidence interval settings
-    confidence_level: float = 0.95
-    monte_carlo_simulations: int = 1000
-    
-    # Quality thresholds
     min_confidence_threshold: float = 0.5
     min_composite_score: float = 0.4
-    max_drawdown_threshold: float = 0.25
+    max_strategies: int = 5
+    enable_risk_adjustment: bool = True
+    enable_portfolio_optimization: bool = True
+    confidence_level: float = 0.95
+    
+    def __post_init__(self):
+        """Validate configuration"""
+        total_weight = sum(self.criteria_weights.values())
+        if abs(total_weight - 1.0) > 0.01:
+            raise ValueError(f"Criteria weights must sum to 1.0, got {total_weight}")
 
-class MultiCriteriaEvaluator:
-    """Multi-criteria evaluator with 7+ ranking factors"""
+
+# ==================== ENHANCED RANKING ENGINE ====================
+
+class EnhancedRankingEngine:
+    """
+    Advanced ranking system with multiple criteria and portfolio optimization
+    
+    Features:
+    - Multi-criteria evaluation with configurable weights
+    - Portfolio fit calculation for diversification
+    - Risk-adjusted scoring with Sharpe-like metrics
+    - Confidence intervals and performance projections
+    - Market adaptability assessment
+    """
     
     def __init__(self, config: Optional[RankingConfig] = None):
         self.config = config or RankingConfig()
-        self.logger = logging.getLogger(f"{__name__}.MultiCriteriaEvaluator")
+        self.logger = self._setup_logging()
+        self.scaler = MinMaxScaler()
         
-    def evaluate_strategies(self, strategies: List[StrategyScore]) -> List[StrategyScore]:
+        # Performance tracking
+        self.evaluation_count = 0
+        self.total_evaluation_time = 0.0
+        
+        self.logger.info("🏆 Enhanced Ranking Engine initialized")
+        self.logger.info(f"📊 Criteria weights: {len(self.config.criteria_weights)} factors")
+        self.logger.info(f"🎯 Max strategies: {self.config.max_strategies}")
+    
+    def _setup_logging(self) -> logging.Logger:
+        """Setup logging for ranking engine"""
+        logger = logging.getLogger(f"{__name__}.EnhancedRankingEngine")
+        
+        if not logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            logger.setLevel(logging.INFO)
+        
+        return logger
+    
+    async def calculate_enhanced_rankings(
+        self, 
+        strategies: List[StrategyScore]
+    ) -> List[EnhancedStrategyRanking]:
         """
-        Evaluate strategies using multi-criteria analysis
+        Calculate enhanced rankings with all criteria
         
         Args:
             strategies: List of strategy scores from Baustein B3
             
         Returns:
-            List of evaluated strategies with enhanced metrics
+            List of enhanced strategy rankings (Top-5)
         """
-        self.logger.info(f"🔍 Evaluating {len(strategies)} strategies with multi-criteria analysis")
+        start_time = time.time()
         
-        evaluated_strategies = []
+        self.logger.info(f"🏆 Starting enhanced ranking calculation for {len(strategies)} strategies")
         
-        for strategy in strategies:
-            # Apply quality filters
-            if not self._meets_quality_thresholds(strategy):
-                self.logger.warning(f"⚠️ Strategy {strategy.name} filtered out due to quality thresholds")
-                continue
+        # Filter strategies by minimum thresholds
+        filtered_strategies = self._filter_strategies(strategies)
+        self.logger.info(f"📊 Filtered to {len(filtered_strategies)} strategies above thresholds")
+        
+        if len(filtered_strategies) == 0:
+            self.logger.warning("⚠️ No strategies meet minimum criteria")
+            return []
+        
+        # Calculate enhanced metrics for all strategies
+        enhanced_rankings = []
+        
+        for strategy in filtered_strategies:
+            # Calculate portfolio fit
+            portfolio_fit = self.calculate_portfolio_fit(strategy, filtered_strategies)
             
-            # Calculate weighted composite score
-            weighted_score = self._calculate_weighted_score(strategy)
+            # Calculate diversification score
+            diversification_score = self.calculate_diversification_score(strategy, filtered_strategies)
             
-            # Update strategy with enhanced metrics
-            enhanced_strategy = StrategyScore(
-                name=strategy.name,
-                signal_confidence=strategy.signal_confidence,
-                risk_reward_ratio=strategy.risk_reward_ratio,
-                opportunity_score=strategy.opportunity_score,
-                fusion_confidence=strategy.fusion_confidence,
-                consistency_score=strategy.consistency_score,
-                profit_potential=strategy.profit_potential,
-                drawdown_risk=strategy.drawdown_risk,
-                composite_score=weighted_score
+            # Calculate risk-adjusted score
+            risk_adjusted_score = self.calculate_risk_adjusted_score(strategy)
+            
+            # Calculate market adaptability
+            market_adaptability = self.calculate_market_adaptability(strategy)
+            
+            # Calculate final ranking score
+            final_score = self.compute_final_ranking_score(
+                strategy, portfolio_fit, diversification_score, 
+                risk_adjusted_score, market_adaptability
             )
             
-            evaluated_strategies.append(enhanced_strategy)
+            # Calculate confidence intervals
+            confidence_intervals = self.calculate_confidence_intervals(strategy)
+            
+            # Calculate performance projections
+            performance_projections = self.calculate_performance_projections(strategy)
+            
+            # Calculate risk metrics
+            risk_metrics = self.calculate_risk_metrics(strategy)
+            
+            # Determine risk level
+            risk_level = self.determine_risk_level(strategy)
+            
+            enhanced_ranking = EnhancedStrategyRanking(
+                strategy=strategy,
+                portfolio_fit=portfolio_fit,
+                diversification_score=diversification_score,
+                risk_adjusted_score=risk_adjusted_score,
+                market_adaptability=market_adaptability,
+                final_ranking_score=final_score,
+                rank_position=0,  # Will be set after sorting
+                confidence_intervals=confidence_intervals,
+                performance_projections=performance_projections,
+                risk_metrics=risk_metrics,
+                risk_level=risk_level
+            )
+            
+            enhanced_rankings.append(enhanced_ranking)
         
-        # Sort by composite score
-        evaluated_strategies.sort(key=lambda x: x.composite_score, reverse=True)
+        # Sort by final ranking score (descending)
+        enhanced_rankings.sort(key=lambda x: x.final_ranking_score, reverse=True)
         
-        self.logger.info(f"✅ Multi-criteria evaluation complete: {len(evaluated_strategies)} strategies passed filters")
+        # Assign rank positions and limit to top strategies
+        top_rankings = []
+        for i, ranking in enumerate(enhanced_rankings[:self.config.max_strategies]):
+            ranking.rank_position = i + 1
+            top_rankings.append(ranking)
         
-        return evaluated_strategies
+        execution_time = time.time() - start_time
+        self.evaluation_count += len(strategies)
+        self.total_evaluation_time += execution_time
+        
+        self.logger.info(f"🎯 Enhanced ranking completed in {execution_time:.3f}s")
+        self.logger.info(f"🏆 Top-{len(top_rankings)} strategies selected")
+        
+        if top_rankings:
+            avg_score = np.mean([r.final_ranking_score for r in top_rankings])
+            self.logger.info(f"📊 Average final score: {avg_score:.3f}")
+        
+        return top_rankings
     
-    def _meets_quality_thresholds(self, strategy: StrategyScore) -> bool:
-        """Check if strategy meets minimum quality thresholds"""
-        return (
-            strategy.signal_confidence >= self.config.min_confidence_threshold and
-            strategy.composite_score >= self.config.min_composite_score and
-            strategy.drawdown_risk <= self.config.max_drawdown_threshold
-        )
-    
-    def _calculate_weighted_score(self, strategy: StrategyScore) -> float:
-        """Calculate weighted composite score using configured weights"""
-        weights = self.config.criteria_weights
+    def _filter_strategies(self, strategies: List[StrategyScore]) -> List[StrategyScore]:
+        """Filter strategies by minimum thresholds"""
+        filtered = []
         
-        score = (
-            strategy.signal_confidence * weights[StrategyRankingCriteria.SIGNAL_CONFIDENCE] +
-            (strategy.risk_reward_ratio / 4.0) * weights[StrategyRankingCriteria.RISK_REWARD_RATIO] +
-            strategy.opportunity_score * weights[StrategyRankingCriteria.OPPORTUNITY_SCORE] +
-            strategy.fusion_confidence * weights[StrategyRankingCriteria.FUSION_CONFIDENCE] +
-            strategy.consistency_score * weights[StrategyRankingCriteria.CONSISTENCY_SCORE] +
-            strategy.profit_potential * weights[StrategyRankingCriteria.PROFIT_POTENTIAL] +
-            (1.0 - strategy.drawdown_risk) * weights[StrategyRankingCriteria.DRAWDOWN_RISK]
-        )
+        for strategy in strategies:
+            # Check minimum confidence threshold
+            if strategy.signal_confidence < self.config.min_confidence_threshold:
+                continue
+            
+            # Check minimum composite score
+            if strategy.composite_score < self.config.min_composite_score:
+                continue
+            
+            # Check for valid scores (no NaN or infinite values)
+            scores = [
+                strategy.signal_confidence,
+                strategy.risk_reward_ratio,
+                strategy.opportunity_score,
+                strategy.fusion_confidence,
+                strategy.consistency_score,
+                strategy.profit_potential,
+                strategy.drawdown_risk,
+                strategy.composite_score
+            ]
+            
+            if any(not np.isfinite(score) for score in scores):
+                continue
+            
+            filtered.append(strategy)
         
-        return score
-
-class PortfolioFitCalculator:
-    """Portfolio fit calculator for diversification scoring"""
+        return filtered
     
-    def __init__(self, config: Optional[RankingConfig] = None):
-        self.config = config or RankingConfig()
-        self.logger = logging.getLogger(f"{__name__}.PortfolioFitCalculator")
-    
-    def calculate_portfolio_fit(self, strategy: StrategyScore, all_strategies: List[StrategyScore]) -> float:
+    def calculate_portfolio_fit(
+        self, 
+        strategy: StrategyScore, 
+        all_strategies: List[StrategyScore]
+    ) -> float:
         """
-        Calculate portfolio fit based on diversification benefits
+        Calculate portfolio fit based on diversification potential
         
         Args:
-            strategy: Strategy to evaluate
-            all_strategies: All available strategies for comparison
+            strategy: Target strategy
+            all_strategies: All available strategies
             
         Returns:
             Portfolio fit score (0.0 to 1.0)
@@ -198,527 +342,453 @@ class PortfolioFitCalculator:
         if len(all_strategies) <= 1:
             return 1.0
         
+        # Create feature vector for the strategy
+        strategy_features = np.array([
+            strategy.signal_confidence,
+            strategy.risk_reward_ratio,
+            strategy.opportunity_score,
+            strategy.fusion_confidence,
+            strategy.consistency_score,
+            strategy.profit_potential,
+            1.0 - strategy.drawdown_risk  # Invert drawdown risk
+        ])
+        
         # Calculate correlation with other strategies
         correlations = []
         
         for other_strategy in all_strategies:
-            if other_strategy.name != strategy.name:
-                correlation = self._calculate_strategy_correlation(strategy, other_strategy)
-                correlations.append(correlation)
+            if other_strategy.strategy_id == strategy.strategy_id:
+                continue
+            
+            other_features = np.array([
+                other_strategy.signal_confidence,
+                other_strategy.risk_reward_ratio,
+                other_strategy.opportunity_score,
+                other_strategy.fusion_confidence,
+                other_strategy.consistency_score,
+                other_strategy.profit_potential,
+                1.0 - other_strategy.drawdown_risk
+            ])
+            
+            # Calculate Pearson correlation
+            correlation = np.corrcoef(strategy_features, other_features)[0, 1]
+            if np.isfinite(correlation):
+                correlations.append(abs(correlation))
+        
+        if not correlations:
+            return 1.0
         
         # Portfolio fit is inversely related to average correlation
-        avg_correlation = np.mean(correlations) if correlations else 0.0
-        portfolio_fit = 1.0 - min(abs(avg_correlation), 1.0)
+        avg_correlation = np.mean(correlations)
+        portfolio_fit = 1.0 - avg_correlation
         
-        self.logger.debug(f"📊 Portfolio fit for {strategy.name}: {portfolio_fit:.3f} (avg correlation: {avg_correlation:.3f})")
-        
-        return portfolio_fit
+        return max(0.0, min(1.0, portfolio_fit))
     
-    def calculate_diversification_score(self, strategy: StrategyScore, all_strategies: List[StrategyScore]) -> float:
+    def calculate_diversification_score(
+        self, 
+        strategy: StrategyScore, 
+        all_strategies: List[StrategyScore]
+    ) -> float:
         """
-        Calculate diversification score for strategy
+        Calculate diversification score using clustering analysis
         
         Args:
-            strategy: Strategy to evaluate
-            all_strategies: All available strategies for comparison
+            strategy: Target strategy
+            all_strategies: All available strategies
             
         Returns:
             Diversification score (0.0 to 1.0)
         """
-        if len(all_strategies) <= 1:
+        if len(all_strategies) <= 2:
             return 1.0
         
-        # Calculate uniqueness metrics
-        uniqueness_factors = []
+        # Create feature matrix
+        features = []
+        strategy_index = -1
         
-        # Risk-reward uniqueness
-        rr_ratios = [s.risk_reward_ratio for s in all_strategies]
-        rr_uniqueness = self._calculate_uniqueness(strategy.risk_reward_ratio, rr_ratios)
-        uniqueness_factors.append(rr_uniqueness)
+        for i, strat in enumerate(all_strategies):
+            if strat.strategy_id == strategy.strategy_id:
+                strategy_index = i
+            
+            features.append([
+                strat.signal_confidence,
+                strat.risk_reward_ratio,
+                strat.opportunity_score,
+                strat.fusion_confidence,
+                strat.consistency_score,
+                strat.profit_potential,
+                1.0 - strat.drawdown_risk
+            ])
         
-        # Signal confidence uniqueness
-        conf_scores = [s.signal_confidence for s in all_strategies]
-        conf_uniqueness = self._calculate_uniqueness(strategy.signal_confidence, conf_scores)
-        uniqueness_factors.append(conf_uniqueness)
+        features_array = np.array(features)
         
-        # Drawdown risk uniqueness
-        dd_risks = [s.drawdown_risk for s in all_strategies]
-        dd_uniqueness = self._calculate_uniqueness(strategy.drawdown_risk, dd_risks)
-        uniqueness_factors.append(dd_uniqueness)
+        # Normalize features
+        features_normalized = self.scaler.fit_transform(features_array)
         
-        # Overall diversification score
-        diversification_score = np.mean(uniqueness_factors)
+        # Perform clustering
+        n_clusters = min(3, len(all_strategies))
+        kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+        cluster_labels = kmeans.fit_predict(features_normalized)
         
-        self.logger.debug(f"🎯 Diversification score for {strategy.name}: {diversification_score:.3f}")
+        # Calculate diversification based on cluster distribution
+        strategy_cluster = cluster_labels[strategy_index]
+        cluster_counts = np.bincount(cluster_labels)
         
-        return diversification_score
-    
-    def _calculate_strategy_correlation(self, strategy1: StrategyScore, strategy2: StrategyScore) -> float:
-        """Calculate correlation between two strategies based on their metrics"""
-        # Create feature vectors for correlation calculation
-        features1 = np.array([
-            strategy1.signal_confidence,
-            strategy1.risk_reward_ratio / 4.0,  # Normalize
-            strategy1.opportunity_score,
-            strategy1.fusion_confidence,
-            strategy1.consistency_score,
-            strategy1.profit_potential,
-            1.0 - strategy1.drawdown_risk  # Invert for positive correlation
-        ])
+        # Diversification is higher if strategy is in a smaller cluster
+        cluster_size = cluster_counts[strategy_cluster]
+        total_strategies = len(all_strategies)
         
-        features2 = np.array([
-            strategy2.signal_confidence,
-            strategy2.risk_reward_ratio / 4.0,
-            strategy2.opportunity_score,
-            strategy2.fusion_confidence,
-            strategy2.consistency_score,
-            strategy2.profit_potential,
-            1.0 - strategy2.drawdown_risk
-        ])
+        diversification_score = 1.0 - (cluster_size / total_strategies)
         
-        # Calculate Pearson correlation
-        correlation = np.corrcoef(features1, features2)[0, 1]
-        
-        # Handle NaN case
-        if np.isnan(correlation):
-            correlation = 0.0
-        
-        return correlation
-    
-    def _calculate_uniqueness(self, value: float, all_values: List[float]) -> float:
-        """Calculate how unique a value is within a distribution"""
-        if len(all_values) <= 1:
-            return 1.0
-        
-        # Calculate standard deviation from mean
-        mean_val = np.mean(all_values)
-        std_val = np.std(all_values)
-        
-        if std_val == 0:
-            return 0.0
-        
-        # Uniqueness based on distance from mean in standard deviations
-        z_score = abs(value - mean_val) / std_val
-        uniqueness = min(z_score / 2.0, 1.0)  # Cap at 1.0
-        
-        return uniqueness
-
-class RiskAdjustedScorer:
-    """Risk-adjusted scorer with Sharpe-like calculation"""
-    
-    def __init__(self, config: Optional[RankingConfig] = None):
-        self.config = config or RankingConfig()
-        self.logger = logging.getLogger(f"{__name__}.RiskAdjustedScorer")
+        return max(0.0, min(1.0, diversification_score))
     
     def calculate_risk_adjusted_score(self, strategy: StrategyScore) -> float:
         """
-        Calculate Sharpe-like risk-adjusted performance
+        Calculate Sharpe-like risk-adjusted performance score
         
         Args:
             strategy: Strategy to evaluate
             
         Returns:
-            Risk-adjusted score
+            Risk-adjusted score (0.0 to 1.0)
         """
-        # Expected return proxy (profit potential adjusted by confidence)
-        expected_return = strategy.profit_potential * strategy.signal_confidence
+        # Calculate risk-adjusted return using Sharpe-like formula
+        expected_return = strategy.profit_potential
+        risk = strategy.drawdown_risk
         
-        # Risk proxy (drawdown risk + volatility estimate)
-        volatility_estimate = self._estimate_volatility(strategy)
-        total_risk = strategy.drawdown_risk + volatility_estimate
+        # Avoid division by zero
+        if risk <= 0.001:
+            risk = 0.001
         
         # Sharpe-like ratio
-        if total_risk > 0:
-            risk_adjusted_score = (expected_return - self.config.risk_free_rate) / total_risk
-        else:
-            risk_adjusted_score = expected_return - self.config.risk_free_rate
+        sharpe_ratio = expected_return / risk
         
-        # Normalize to 0-10 scale
-        normalized_score = max(0, min(10, risk_adjusted_score * 2 + 5))
+        # Normalize to 0-1 range using sigmoid function
+        risk_adjusted_score = 1.0 / (1.0 + np.exp(-sharpe_ratio))
         
-        self.logger.debug(f"📈 Risk-adjusted score for {strategy.name}: {normalized_score:.3f}")
+        # Apply consistency factor
+        consistency_factor = strategy.consistency_score
+        risk_adjusted_score *= consistency_factor
         
-        return normalized_score
+        return max(0.0, min(1.0, risk_adjusted_score))
     
-    def calculate_confidence_intervals(self, strategy: StrategyScore) -> Dict[str, Tuple[float, float]]:
+    def calculate_market_adaptability(self, strategy: StrategyScore) -> float:
         """
-        Calculate confidence intervals for strategy performance projections
+        Calculate market adaptability score
         
         Args:
             strategy: Strategy to evaluate
             
         Returns:
-            Dictionary of confidence intervals for different metrics
+            Market adaptability score (0.0 to 1.0)
         """
-        confidence_intervals = {}
+        # Market adaptability based on fusion confidence and opportunity score
+        fusion_weight = 0.6
+        opportunity_weight = 0.4
         
-        # Monte Carlo simulation for confidence intervals
-        n_simulations = self.config.monte_carlo_simulations
-        
-        # Simulate expected returns
-        return_simulations = self._simulate_returns(strategy, n_simulations)
-        confidence_intervals["expected_return"] = self._calculate_confidence_interval(
-            return_simulations, self.config.confidence_level
+        adaptability = (
+            fusion_weight * strategy.fusion_confidence +
+            opportunity_weight * strategy.opportunity_score
         )
         
-        # Simulate drawdowns
-        drawdown_simulations = self._simulate_drawdowns(strategy, n_simulations)
-        confidence_intervals["max_drawdown"] = self._calculate_confidence_interval(
-            drawdown_simulations, self.config.confidence_level
-        )
+        # Apply signal confidence as a multiplier
+        adaptability *= strategy.signal_confidence
         
-        # Simulate Sharpe ratios
-        sharpe_simulations = self._simulate_sharpe_ratios(strategy, n_simulations)
-        confidence_intervals["sharpe_ratio"] = self._calculate_confidence_interval(
-            sharpe_simulations, self.config.confidence_level
-        )
-        
-        self.logger.debug(f"📊 Confidence intervals calculated for {strategy.name}")
-        
-        return confidence_intervals
+        return max(0.0, min(1.0, adaptability))
     
-    def calculate_performance_projections(self, strategy: StrategyScore) -> Dict[str, float]:
+    def compute_final_ranking_score(
+        self,
+        strategy: StrategyScore,
+        portfolio_fit: float,
+        diversification_score: float,
+        risk_adjusted_score: float,
+        market_adaptability: float
+    ) -> float:
         """
-        Calculate performance projections for different time horizons
+        Compute final ranking score using weighted criteria
         
         Args:
-            strategy: Strategy to evaluate
+            strategy: Base strategy score
+            portfolio_fit: Portfolio fit score
+            diversification_score: Diversification score
+            risk_adjusted_score: Risk-adjusted score
+            market_adaptability: Market adaptability score
+            
+        Returns:
+            Final ranking score (0.0 to 1.0)
+        """
+        # Get criteria weights
+        weights = self.config.criteria_weights
+        
+        # Calculate weighted score
+        final_score = (
+            weights[StrategyRankingCriteria.SIGNAL_CONFIDENCE] * strategy.signal_confidence +
+            weights[StrategyRankingCriteria.RISK_REWARD_RATIO] * strategy.risk_reward_ratio +
+            weights[StrategyRankingCriteria.OPPORTUNITY_SCORE] * strategy.opportunity_score +
+            weights[StrategyRankingCriteria.FUSION_CONFIDENCE] * strategy.fusion_confidence +
+            weights[StrategyRankingCriteria.CONSISTENCY_SCORE] * strategy.consistency_score +
+            weights[StrategyRankingCriteria.PROFIT_POTENTIAL] * strategy.profit_potential +
+            weights[StrategyRankingCriteria.DRAWDOWN_RISK] * (1.0 - strategy.drawdown_risk) +
+            weights[StrategyRankingCriteria.PORTFOLIO_FIT] * portfolio_fit +
+            weights[StrategyRankingCriteria.DIVERSIFICATION_SCORE] * diversification_score +
+            weights[StrategyRankingCriteria.MARKET_ADAPTABILITY] * market_adaptability
+        )
+        
+        return max(0.0, min(1.0, final_score))
+    
+    def calculate_confidence_intervals(
+        self, 
+        strategy: StrategyScore
+    ) -> Dict[str, Tuple[float, float]]:
+        """
+        Calculate confidence intervals for key metrics
+        
+        Args:
+            strategy: Strategy to analyze
+            
+        Returns:
+            Dictionary of confidence intervals
+        """
+        confidence_level = self.config.confidence_level
+        z_score = stats.norm.ppf((1 + confidence_level) / 2)
+        
+        # Estimate standard errors (simplified approach)
+        base_std = 0.05  # 5% base standard error
+        
+        intervals = {}
+        
+        # Key metrics with confidence intervals
+        metrics = {
+            "signal_confidence": strategy.signal_confidence,
+            "profit_potential": strategy.profit_potential,
+            "risk_reward_ratio": strategy.risk_reward_ratio,
+            "composite_score": strategy.composite_score
+        }
+        
+        for metric_name, value in metrics.items():
+            # Estimate standard error based on value and consistency
+            std_error = base_std * (1.0 - strategy.consistency_score * 0.5)
+            margin_of_error = z_score * std_error
+            
+            lower_bound = max(0.0, value - margin_of_error)
+            upper_bound = min(1.0, value + margin_of_error)
+            
+            intervals[metric_name] = (lower_bound, upper_bound)
+        
+        return intervals
+    
+    def calculate_performance_projections(
+        self, 
+        strategy: StrategyScore
+    ) -> Dict[str, float]:
+        """
+        Calculate performance projections
+        
+        Args:
+            strategy: Strategy to analyze
             
         Returns:
             Dictionary of performance projections
         """
         projections = {}
         
-        # Base annual return estimate
-        base_annual_return = strategy.profit_potential * strategy.signal_confidence
+        # Expected monthly return
+        monthly_return = strategy.profit_potential * 0.1  # 10% of profit potential per month
+        projections["expected_monthly_return"] = monthly_return
         
-        # Time horizon projections
-        projections["1_month"] = base_annual_return / 12
-        projections["3_months"] = base_annual_return / 4
-        projections["6_months"] = base_annual_return / 2
-        projections["1_year"] = base_annual_return
+        # Expected annual return
+        annual_return = monthly_return * 12 * (1 + strategy.consistency_score * 0.2)
+        projections["expected_annual_return"] = annual_return
         
-        # Risk-adjusted projections
-        risk_adjustment = 1.0 - strategy.drawdown_risk
-        projections["risk_adjusted_1_year"] = base_annual_return * risk_adjustment
+        # Maximum drawdown projection
+        max_drawdown = strategy.drawdown_risk * 1.5  # 150% of base drawdown risk
+        projections["projected_max_drawdown"] = max_drawdown
         
-        # Compound growth estimate
-        monthly_return = base_annual_return / 12
-        projections["compound_1_year"] = (1 + monthly_return) ** 12 - 1
+        # Win rate projection
+        win_rate = 0.5 + (strategy.signal_confidence - 0.5) * 0.6
+        projections["projected_win_rate"] = max(0.3, min(0.8, win_rate))
         
-        self.logger.debug(f"📈 Performance projections calculated for {strategy.name}")
+        # Volatility projection
+        volatility = strategy.drawdown_risk * 2.0
+        projections["projected_volatility"] = volatility
         
         return projections
     
-    def _estimate_volatility(self, strategy: StrategyScore) -> float:
-        """Estimate strategy volatility from available metrics"""
-        # Volatility proxy based on consistency and confidence
-        consistency_factor = 1.0 - strategy.consistency_score
-        confidence_factor = 1.0 - strategy.fusion_confidence
+    def calculate_risk_metrics(self, strategy: StrategyScore) -> Dict[str, float]:
+        """
+        Calculate comprehensive risk metrics
         
-        volatility_estimate = (consistency_factor + confidence_factor) / 2
+        Args:
+            strategy: Strategy to analyze
+            
+        Returns:
+            Dictionary of risk metrics
+        """
+        risk_metrics = {}
         
-        return volatility_estimate
+        # Value at Risk (simplified)
+        var_95 = strategy.drawdown_risk * 1.65  # 95% VaR approximation
+        risk_metrics["var_95"] = var_95
+        
+        # Expected Shortfall
+        expected_shortfall = var_95 * 1.3
+        risk_metrics["expected_shortfall"] = expected_shortfall
+        
+        # Risk-Return Ratio
+        risk_return_ratio = strategy.profit_potential / max(0.001, strategy.drawdown_risk)
+        risk_metrics["risk_return_ratio"] = risk_return_ratio
+        
+        # Stability Score
+        stability_score = strategy.consistency_score * (1.0 - strategy.drawdown_risk)
+        risk_metrics["stability_score"] = stability_score
+        
+        # Stress Test Score (how well strategy handles market stress)
+        stress_test_score = strategy.fusion_confidence * strategy.signal_confidence
+        risk_metrics["stress_test_score"] = stress_test_score
+        
+        return risk_metrics
     
-    def _simulate_returns(self, strategy: StrategyScore, n_simulations: int) -> np.ndarray:
-        """Simulate returns using Monte Carlo"""
-        mean_return = strategy.profit_potential * strategy.signal_confidence
-        volatility = self._estimate_volatility(strategy)
+    def determine_risk_level(self, strategy: StrategyScore) -> RiskLevel:
+        """
+        Determine risk level classification
         
-        returns = np.random.normal(mean_return, volatility, n_simulations)
-        
-        return returns
-    
-    def _simulate_drawdowns(self, strategy: StrategyScore, n_simulations: int) -> np.ndarray:
-        """Simulate drawdowns using Monte Carlo"""
-        mean_drawdown = strategy.drawdown_risk
-        volatility = self._estimate_volatility(strategy) * 0.5  # Lower volatility for drawdowns
-        
-        drawdowns = np.random.normal(mean_drawdown, volatility, n_simulations)
-        drawdowns = np.clip(drawdowns, 0, 1)  # Clip to valid range
-        
-        return drawdowns
-    
-    def _simulate_sharpe_ratios(self, strategy: StrategyScore, n_simulations: int) -> np.ndarray:
-        """Simulate Sharpe ratios using Monte Carlo"""
-        returns = self._simulate_returns(strategy, n_simulations)
-        volatilities = np.random.normal(
-            self._estimate_volatility(strategy), 
-            self._estimate_volatility(strategy) * 0.2, 
-            n_simulations
+        Args:
+            strategy: Strategy to classify
+            
+        Returns:
+            Risk level classification
+        """
+        # Calculate composite risk score
+        risk_score = (
+            strategy.drawdown_risk * 0.4 +
+            (1.0 - strategy.consistency_score) * 0.3 +
+            (1.0 - strategy.signal_confidence) * 0.2 +
+            (1.0 - strategy.risk_reward_ratio) * 0.1
         )
-        volatilities = np.clip(volatilities, 0.01, 1.0)  # Avoid division by zero
         
-        sharpe_ratios = (returns - self.config.risk_free_rate) / volatilities
-        
-        return sharpe_ratios
+        # Classify risk level
+        if risk_score <= 0.2:
+            return RiskLevel.VERY_LOW
+        elif risk_score <= 0.4:
+            return RiskLevel.LOW
+        elif risk_score <= 0.6:
+            return RiskLevel.MEDIUM
+        elif risk_score <= 0.8:
+            return RiskLevel.HIGH
+        else:
+            return RiskLevel.VERY_HIGH
     
-    def _calculate_confidence_interval(self, data: np.ndarray, confidence_level: float) -> Tuple[float, float]:
-        """Calculate confidence interval from data"""
-        alpha = 1 - confidence_level
-        lower_percentile = (alpha / 2) * 100
-        upper_percentile = (1 - alpha / 2) * 100
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """Get performance statistics"""
+        avg_evaluation_time = (
+            self.total_evaluation_time / max(1, self.evaluation_count)
+        )
         
-        lower_bound = np.percentile(data, lower_percentile)
-        upper_bound = np.percentile(data, upper_percentile)
-        
-        return (lower_bound, upper_bound)
-
-class EnhancedRankingEngine:
-    """
-    Advanced ranking system with multiple criteria, portfolio optimization,
-    and risk-adjusted scoring
-    """
-    
-    def __init__(self, config: Optional[RankingConfig] = None):
-        self.config = config or RankingConfig()
-        self.logger = logging.getLogger(f"{__name__}.EnhancedRankingEngine")
-        
-        # Initialize components
-        self.multi_criteria_evaluator = MultiCriteriaEvaluator(self.config)
-        self.portfolio_calculator = PortfolioFitCalculator(self.config)
-        self.risk_scorer = RiskAdjustedScorer(self.config)
-        
-        self.logger.info("🏆 Enhanced Ranking Engine initialized")
-    
-    def compute_final_ranking(self, strategies: List[StrategyScore]) -> List[EnhancedStrategyRanking]:
-        """
-        Compute final enhanced ranking with all factors
-        
-        Args:
-            strategies: List of strategy scores from Baustein B3
-            
-        Returns:
-            List of enhanced strategy rankings
-        """
-        self.logger.info(f"🚀 Computing final ranking for {len(strategies)} strategies")
-        
-        if not strategies:
-            self.logger.warning("⚠️ No strategies provided for ranking")
-            return []
-        
-        # Step 1: Multi-criteria evaluation
-        evaluated_strategies = self.multi_criteria_evaluator.evaluate_strategies(strategies)
-        
-        if not evaluated_strategies:
-            self.logger.warning("⚠️ No strategies passed quality filters")
-            return []
-        
-        # Step 2: Calculate enhanced rankings
-        enhanced_rankings = []
-        
-        for strategy in evaluated_strategies:
-            # Portfolio fit calculation
-            portfolio_fit = self.portfolio_calculator.calculate_portfolio_fit(
-                strategy, evaluated_strategies
-            )
-            
-            # Diversification score
-            diversification_score = self.portfolio_calculator.calculate_diversification_score(
-                strategy, evaluated_strategies
-            )
-            
-            # Risk-adjusted score
-            risk_adjusted_score = self.risk_scorer.calculate_risk_adjusted_score(strategy)
-            
-            # Confidence intervals
-            confidence_intervals = self.risk_scorer.calculate_confidence_intervals(strategy)
-            
-            # Performance projections
-            performance_projections = self.risk_scorer.calculate_performance_projections(strategy)
-            
-            # Risk metrics
-            risk_metrics = {
-                "volatility_estimate": self.risk_scorer._estimate_volatility(strategy),
-                "max_drawdown_estimate": strategy.drawdown_risk,
-                "risk_adjusted_return": risk_adjusted_score,
-                "sharpe_estimate": risk_adjusted_score / 2.0  # Rough Sharpe estimate
-            }
-            
-            # Final ranking score calculation
-            final_ranking_score = (
-                strategy.composite_score * self.config.base_score_weight +
-                portfolio_fit * self.config.portfolio_fit_weight +
-                diversification_score * self.config.diversification_weight +
-                (risk_adjusted_score / 10.0) * self.config.risk_adjustment_weight
-            )
-            
-            # Create enhanced ranking
-            enhanced_ranking = EnhancedStrategyRanking(
-                strategy=strategy,
-                portfolio_fit=portfolio_fit,
-                diversification_score=diversification_score,
-                risk_adjusted_score=risk_adjusted_score,
-                final_ranking_score=final_ranking_score,
-                rank_position=0,  # Will be set after sorting
-                confidence_intervals=confidence_intervals,
-                performance_projections=performance_projections,
-                risk_metrics=risk_metrics
-            )
-            
-            enhanced_rankings.append(enhanced_ranking)
-        
-        # Step 3: Sort by final ranking score and assign positions
-        enhanced_rankings.sort(key=lambda x: x.final_ranking_score, reverse=True)
-        
-        for i, ranking in enumerate(enhanced_rankings):
-            ranking.rank_position = i + 1
-        
-        self.logger.info(f"🏆 Final ranking computed: {len(enhanced_rankings)} strategies ranked")
-        
-        # Log top strategies
-        for i, ranking in enumerate(enhanced_rankings[:5]):
-            self.logger.info(
-                f"  #{i+1}: {ranking.strategy.name} "
-                f"(Score: {ranking.final_ranking_score:.3f}, "
-                f"Portfolio Fit: {ranking.portfolio_fit:.3f}, "
-                f"Risk-Adj: {ranking.risk_adjusted_score:.3f})"
-            )
-        
-        return enhanced_rankings
-    
-    def get_ranking_summary(self, enhanced_rankings: List[EnhancedStrategyRanking]) -> Dict[str, Any]:
-        """
-        Get comprehensive ranking summary
-        
-        Args:
-            enhanced_rankings: List of enhanced strategy rankings
-            
-        Returns:
-            Dictionary with ranking summary statistics
-        """
-        if not enhanced_rankings:
-            return {"total_strategies": 0, "summary": "No strategies ranked"}
-        
-        summary = {
-            "total_strategies": len(enhanced_rankings),
-            "ranking_timestamp": datetime.now().isoformat(),
-            "config": {
-                "criteria_weights": {k.value: v for k, v in self.config.criteria_weights.items()},
-                "portfolio_fit_weight": self.config.portfolio_fit_weight,
-                "diversification_weight": self.config.diversification_weight,
-                "risk_adjustment_weight": self.config.risk_adjustment_weight,
-                "base_score_weight": self.config.base_score_weight
-            },
-            "top_strategy": {
-                "name": enhanced_rankings[0].strategy.name,
-                "final_score": enhanced_rankings[0].final_ranking_score,
-                "portfolio_fit": enhanced_rankings[0].portfolio_fit,
-                "risk_adjusted_score": enhanced_rankings[0].risk_adjusted_score
-            },
-            "score_statistics": {
-                "mean_final_score": np.mean([r.final_ranking_score for r in enhanced_rankings]),
-                "std_final_score": np.std([r.final_ranking_score for r in enhanced_rankings]),
-                "min_final_score": min(r.final_ranking_score for r in enhanced_rankings),
-                "max_final_score": max(r.final_ranking_score for r in enhanced_rankings)
-            },
-            "portfolio_statistics": {
-                "mean_portfolio_fit": np.mean([r.portfolio_fit for r in enhanced_rankings]),
-                "mean_diversification": np.mean([r.diversification_score for r in enhanced_rankings]),
-                "mean_risk_adjusted": np.mean([r.risk_adjusted_score for r in enhanced_rankings])
-            }
+        return {
+            "total_evaluations": self.evaluation_count,
+            "total_evaluation_time": self.total_evaluation_time,
+            "average_evaluation_time": avg_evaluation_time,
+            "evaluations_per_second": 1.0 / max(0.001, avg_evaluation_time),
+            "criteria_count": len(self.config.criteria_weights),
+            "max_strategies": self.config.max_strategies
         }
-        
-        return summary
 
-# Factory function for easy instantiation
-def create_enhanced_ranking_engine(
-    criteria_weights: Optional[Dict[str, float]] = None,
-    portfolio_weights: Optional[Dict[str, float]] = None,
-    risk_free_rate: float = 0.02
-) -> EnhancedRankingEngine:
-    """
-    Factory function for Enhanced Ranking Engine
-    
-    Args:
-        criteria_weights: Custom criteria weights
-        portfolio_weights: Custom portfolio optimization weights
-        risk_free_rate: Risk-free rate for Sharpe calculations
-        
-    Returns:
-        Configured EnhancedRankingEngine instance
-    """
-    config = RankingConfig()
-    
-    # Update criteria weights if provided
-    if criteria_weights:
-        for criteria_name, weight in criteria_weights.items():
-            try:
-                criteria = StrategyRankingCriteria(criteria_name)
-                config.criteria_weights[criteria] = weight
-            except ValueError:
-                logger.warning(f"⚠️ Unknown criteria: {criteria_name}")
-    
-    # Update portfolio weights if provided
-    if portfolio_weights:
-        config.portfolio_fit_weight = portfolio_weights.get("portfolio_fit", config.portfolio_fit_weight)
-        config.diversification_weight = portfolio_weights.get("diversification", config.diversification_weight)
-        config.risk_adjustment_weight = portfolio_weights.get("risk_adjustment", config.risk_adjustment_weight)
-        config.base_score_weight = portfolio_weights.get("base_score", config.base_score_weight)
-    
-    # Update risk-free rate
-    config.risk_free_rate = risk_free_rate
-    
-    return EnhancedRankingEngine(config)
 
-# Example usage and testing
-def main():
-    """Example usage of Enhanced Ranking Engine"""
+# ==================== MOCK DATA GENERATOR ====================
+
+def generate_mock_strategy_scores(count: int = 20) -> List[StrategyScore]:
+    """Generate mock strategy scores for testing"""
+    import random
     
-    # Create sample strategies
-    sample_strategies = [
-        StrategyScore(
-            name="Professional_Tickdata_Strategy_1",
-            signal_confidence=0.85,
-            risk_reward_ratio=2.5,
-            opportunity_score=0.78,
-            fusion_confidence=0.82,
-            consistency_score=0.75,
-            profit_potential=0.88,
-            drawdown_risk=0.15
-        ),
-        StrategyScore(
-            name="Professional_Tickdata_Strategy_2",
-            signal_confidence=0.92,
-            risk_reward_ratio=3.2,
-            opportunity_score=0.86,
-            fusion_confidence=0.89,
-            consistency_score=0.83,
-            profit_potential=0.94,
-            drawdown_risk=0.12
-        ),
-        StrategyScore(
-            name="Professional_Tickdata_Strategy_3",
-            signal_confidence=0.79,
-            risk_reward_ratio=2.1,
-            opportunity_score=0.73,
-            fusion_confidence=0.77,
-            consistency_score=0.71,
-            profit_potential=0.81,
-            drawdown_risk=0.18
+    strategies = []
+    
+    for i in range(count):
+        # Generate realistic but varied scores
+        signal_confidence = random.uniform(0.4, 0.95)
+        risk_reward_ratio = random.uniform(0.3, 0.9)
+        opportunity_score = random.uniform(0.2, 0.85)
+        fusion_confidence = random.uniform(0.5, 0.9)
+        consistency_score = random.uniform(0.4, 0.8)
+        profit_potential = random.uniform(0.3, 0.8)
+        drawdown_risk = random.uniform(0.1, 0.6)
+        
+        # Calculate composite score
+        composite_score = (
+            signal_confidence * 0.25 +
+            risk_reward_ratio * 0.20 +
+            opportunity_score * 0.15 +
+            fusion_confidence * 0.15 +
+            consistency_score * 0.10 +
+            profit_potential * 0.10 +
+            (1.0 - drawdown_risk) * 0.05
         )
-    ]
+        
+        strategy = StrategyScore(
+            strategy_id=f"strategy_{i+1:03d}",
+            name=f"AI_Strategy_{i+1}",
+            signal_confidence=signal_confidence,
+            risk_reward_ratio=risk_reward_ratio,
+            opportunity_score=opportunity_score,
+            fusion_confidence=fusion_confidence,
+            consistency_score=consistency_score,
+            profit_potential=profit_potential,
+            drawdown_risk=drawdown_risk,
+            composite_score=composite_score,
+            metadata={
+                "timeframe": random.choice(["1m", "5m", "15m", "1h", "4h"]),
+                "symbol": "EUR/USD",
+                "created_at": datetime.now().isoformat()
+            }
+        )
+        
+        strategies.append(strategy)
     
-    # Create enhanced ranking engine
-    ranking_engine = create_enhanced_ranking_engine()
+    return strategies
+
+
+# ==================== MAIN EXECUTION ====================
+
+async def main():
+    """Test the Enhanced Ranking Engine"""
+    print("🏆 Testing Enhanced Ranking Engine")
+    print("=" * 60)
     
-    # Compute final rankings
-    enhanced_rankings = ranking_engine.compute_final_ranking(sample_strategies)
+    # Create ranking engine
+    config = RankingConfig(max_strategies=5)
+    engine = EnhancedRankingEngine(config)
     
-    # Get summary
-    summary = ranking_engine.get_ranking_summary(enhanced_rankings)
+    # Generate mock strategies
+    print("📊 Generating mock strategy scores...")
+    strategies = generate_mock_strategy_scores(20)
+    print(f"✅ Generated {len(strategies)} mock strategies")
     
-    print("🏆 Enhanced Ranking Results:")
-    print(json.dumps(summary, indent=2, default=str))
+    # Calculate enhanced rankings
+    print("\n🔄 Calculating enhanced rankings...")
+    start_time = time.time()
     
-    print("\n📊 Top Strategies:")
-    for ranking in enhanced_rankings:
+    rankings = await engine.calculate_enhanced_rankings(strategies)
+    
+    execution_time = time.time() - start_time
+    
+    # Display results
+    print(f"\n🎯 Enhanced Ranking Results ({execution_time:.3f}s)")
+    print("=" * 60)
+    
+    for ranking in rankings:
         print(f"#{ranking.rank_position}: {ranking.strategy.name}")
         print(f"  Final Score: {ranking.final_ranking_score:.3f}")
         print(f"  Portfolio Fit: {ranking.portfolio_fit:.3f}")
-        print(f"  Risk-Adjusted: {ranking.risk_adjusted_score:.3f}")
-        print(f"  Diversification: {ranking.diversification_score:.3f}")
+        print(f"  Risk Level: {ranking.risk_level.value}")
+        print(f"  Expected Annual Return: {ranking.performance_projections['expected_annual_return']:.1%}")
         print()
+    
+    # Performance stats
+    stats = engine.get_performance_stats()
+    print("📊 Performance Statistics:")
+    print(f"  Evaluations/sec: {stats['evaluations_per_second']:.1f}")
+    print(f"  Total evaluations: {stats['total_evaluations']}")
+    print(f"  Criteria count: {stats['criteria_count']}")
+
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
